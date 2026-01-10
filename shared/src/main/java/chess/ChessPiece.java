@@ -240,10 +240,21 @@ public class ChessPiece {
 
     @Override
     public String toString() {
-        return "ChessPiece{" +
-                "pieceColor=" + getTeamColor() +
-                ", type=" + getPieceType() +
-                '}';
+        String out = switch (getPieceType()) {
+            case PieceType.BISHOP -> "B";
+            case PieceType.KING -> "K";
+            case PieceType.KNIGHT -> "N";
+            case PieceType.PAWN -> "P";
+            case PieceType.QUEEN -> "Q";
+            case PieceType.ROOK -> "R";
+        };
+
+        if (getTeamColor() == ChessGame.TeamColor.BLACK){
+            out = out.toLowerCase();
+        }
+
+        return out;
+
     }
 
     @Override

@@ -71,7 +71,22 @@ public class ChessBoard {
 
     @Override
     public String toString() {
-        return Arrays.deepToString(squares);
+        StringBuilder out = new StringBuilder();
+        for (int r = 8; r > 0; r--){
+            out.append("|");
+            for (int c = 1; c <= 8; c++){
+                ChessPiece piece = getPiece(new ChessPosition(r, c));
+                if(piece == null){
+                    out.append(" ");
+                }
+                else{
+                    out.append(piece);
+                }
+                out.append("|");
+            }
+            out.append("\n");
+        }
+        return out.toString();
     }
 
     @Override
