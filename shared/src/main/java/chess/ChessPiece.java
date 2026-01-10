@@ -98,6 +98,86 @@ public class ChessPiece {
                 }
             }
         }
+
+        if (piece.getPieceType() == PieceType.KNIGHT){
+            int r;
+            int c;
+            for (int delta_r = -2; delta_r <= 2; delta_r++) {
+                if(delta_r == 0){continue;}
+                for (int negate=1; negate>=-1; negate-=2) {
+                    int delta_c = negate*(3 - Math.abs(delta_r));
+                    r = myPosition.getRow() + delta_r;
+                    c = myPosition.getColumn() + delta_c;
+                    if (r <= 0 || r > 8 || c <= 0 || c > 8) {
+                        continue;
+                    }
+                    ChessPiece otherPiece = board.getPiece(new ChessPosition(r, c));
+                    if (otherPiece == null || piece.getTeamColor() != otherPiece.getTeamColor()) {
+                        validMoves.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()),
+                                new ChessPosition(r, c), null));
+                    }
+                }
+            }
+        }
+
+        if (piece.getPieceType() == PieceType.PAWN){
+            int dir;
+            boolean firstMove;
+            boolean canPromote;
+            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE){
+                dir = 1;
+                firstMove = myPosition.getRow() == 2;
+                canPromote = myPosition.getRow() == 7;
+            }
+            else{
+                dir = -1;
+                firstMove = myPosition.getRow() == 7;
+                canPromote = myPosition.getRow() == 2;
+            }
+            int r;
+            int c;
+            for (int delta_c = -1; delta_c <= 1; delta_c++) {
+                r = myPosition.getRow() + dir;
+                c = myPosition.getColumn() + delta_c;
+                if (r <= 0 || r > 8 || c <= 0 || c > 8) {
+                    continue;
+                }
+                ChessPiece otherPiece = board.getPiece(new ChessPosition(r, c));
+                if (delta_c != 0 && otherPiece != null && piece.getTeamColor() != otherPiece.getTeamColor()) {
+                    if (canPromote){
+                        for(PieceType promotionType : PieceType.values()){
+                            if(promotionType == PieceType.KING || promotionType == PieceType.PAWN) {continue;}
+                            validMoves.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()),
+                                    new ChessPosition(r, c), promotionType));
+                        }
+                    }
+                    else {
+                        validMoves.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()),
+                                new ChessPosition(r, c), null));
+                    }
+                }
+                else if (delta_c == 0 && otherPiece == null){
+                    if (canPromote){
+                        for(PieceType promotionType : PieceType.values()){
+                            if(promotionType == PieceType.KING || promotionType == PieceType.PAWN) {continue;}
+                            validMoves.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()),
+                                    new ChessPosition(r, c), promotionType));
+                        }
+                    }
+                    else {
+                        validMoves.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()),
+                                new ChessPosition(r, c), null));
+                    }
+
+                    // First move extra space forward check (impossible to promote here)
+                    if (firstMove && board.getPiece(new ChessPosition(r+dir, c)) == null){
+                        validMoves.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()),
+                                new ChessPosition(r+dir, c), null));
+                    }
+                }
+
+            }
+        }
         return validMoves;
     }
 }
