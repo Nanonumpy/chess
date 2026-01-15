@@ -119,7 +119,7 @@ public class ChessPiece {
         return null;
     }
 
-    public boolean checkMove(ChessBoard board, ChessMove move){
+    private boolean checkMove(ChessBoard board, ChessMove move){
         ChessPosition endPosition = move.getEndPosition();
         int r = endPosition.getRow();
         int c = endPosition.getColumn();
@@ -131,7 +131,7 @@ public class ChessPiece {
 
     }
 
-    public List<ChessMove> moveTillEnd(ChessBoard board, ChessPosition myPosition, int deltaR, int deltaC){
+    private List<ChessMove> moveTillEnd(ChessBoard board, ChessPosition myPosition, int deltaR, int deltaC){
         List<ChessMove> validMoves = new ArrayList<>();
         int r = myPosition.getRow() + deltaR;
         int c = myPosition.getColumn() + deltaC;
@@ -146,7 +146,7 @@ public class ChessPiece {
         return validMoves;
     }
 
-    public List<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
+    private List<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
         List<ChessMove> validMoves = new ArrayList<>();
         for(int deltaR = -1; deltaR <= 1; deltaR += 2){
             for(int deltaC = -1; deltaC <= 1; deltaC += 2){
@@ -157,7 +157,7 @@ public class ChessPiece {
         return validMoves;
     }
 
-    public List<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
+    private List<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
         List<ChessMove> validMoves = new ArrayList<>();
         for(int deltaR = -1; deltaR <= 1; deltaR++){
             for(int deltaC = -1; deltaC <= 1; deltaC ++){
@@ -169,7 +169,7 @@ public class ChessPiece {
         return validMoves;
     }
 
-    public List<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
+    private List<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
         List<ChessMove> validMoves = new ArrayList<>();
         for(int deltaR = -2; deltaR <= 2; deltaR++){
             for(int deltaC = -2; deltaC <= 2; deltaC++){
@@ -185,7 +185,7 @@ public class ChessPiece {
         return validMoves;
     }
 
-    public List<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
+    private List<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
         List<ChessMove> validMoves = new ArrayList<>();
         for(int deltaR = -1; deltaR <= 1; deltaR++){
             for(int deltaC = -1; deltaC <= 1; deltaC++){
@@ -200,7 +200,7 @@ public class ChessPiece {
         return validMoves;
     }
 
-    public List<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
+    private List<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
         List<ChessMove> validMoves = new ArrayList<>();
         ChessPiece piece = board.getPiece(myPosition);
 
@@ -262,7 +262,7 @@ public class ChessPiece {
         return validMoves;
     }
 
-    public List<ChessMove> promoteMoves(ChessPosition startPosition, ChessPosition endPosition) {
+    private List<ChessMove> promoteMoves(ChessPosition startPosition, ChessPosition endPosition) {
         List<ChessMove> validMoves = new ArrayList<>();
         for(PieceType promotion : PieceType.values()){
             if(promotion == PieceType.KING || promotion == PieceType.PAWN) continue;
