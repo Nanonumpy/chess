@@ -207,18 +207,26 @@ public class ChessPiece {
 
         // Castling
         if(!piece.getHasMoved()){
-            ChessPiece leftRook = board.getPiece(new ChessPosition(myPosition.getRow(), 1));
-            ChessPiece rightRook = board.getPiece(new ChessPosition(myPosition.getRow(), 8));
+            for(int rookCol: new int[]{1, 8}){
+                ChessPiece rook = board.getPiece(new ChessPosition(myPosition.getRow(), rookCol));
+                if(rook == null || rook.getHasMoved()) continue;
 
-            // TODO: check if blocked move
-            if(leftRook != null && !leftRook.getHasMoved()){
-                validMoves.add(new ChessMove(myPosition,
-                        new ChessPosition(myPosition.getRow(), myPosition.getColumn()-2),
-                        null));
-            }
-            if(rightRook != null && !rightRook.getHasMoved()){
-                validMoves.add(new ChessMove(myPosition,
-                        new ChessPosition(myPosition.getRow(), myPosition.getColumn()+2),
+
+                int delta = (myPosition.getColumn() < rookCol) ? 1 : -1;
+                int curCol = myPosition.getColumn() + delta;
+                boolean blocked = false;
+
+                // Must be clear path between rook and king, even though king only moves two squares
+                while(curCol != rookCol){
+                    if(board.getPiece(new ChessPosition(myPosition.getRow(), curCol)) != null){
+                        blocked = true;
+                        break;
+                    }
+                    curCol += delta;
+                }
+
+                if(!blocked) validMoves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow(),
+                        myPosition.getColumn()+2*delta),
                         null));
             }
         }
