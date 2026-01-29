@@ -61,17 +61,26 @@ public class ChessGame {
 
         List<ChessMove> validMoves = new ArrayList<>();
         for(ChessMove move : curPiece.pieceMoves(board, startPosition)){
+
+            // King should never be in check during move (castling)
+            if(curPiece.getPieceType() == ChessPiece.PieceType.KING
+                    && Math.abs(move.getEndPosition().getColumn() - move.getStartPosition().getColumn()) > 1){
+                if(CastlingMoveCheck(move)) validMoves.add(move);
+                continue;
+            }
+
             ChessPiece capturedPiece = board.getPiece(move.getEndPosition());
             ChessPiece replacementPiece;
-            if(move.getPromotionPiece() == null) replacementPiece = curPiece;
+            if (move.getPromotionPiece() == null) replacementPiece = curPiece;
             else replacementPiece = new ChessPiece(curPiece.getTeamColor(), move.getPromotionPiece());
 
             board.addPiece(move.getStartPosition(), null);
             board.addPiece(move.getEndPosition(), replacementPiece);
-            if(!isInCheck(curPiece.getTeamColor())) validMoves.add(move);
+            if (!isInCheck(curPiece.getTeamColor())) validMoves.add(move);
             board.addPiece(move.getStartPosition(), curPiece);
             board.addPiece(move.getEndPosition(), capturedPiece);
         }
+
 
         return validMoves;
     }
@@ -193,6 +202,36 @@ public class ChessGame {
             }
         }
 
+        return true;
+    }
+
+    /**
+     * Check if a castling move is valid.
+     * This means that the king neither starts nor ends in check and doesn't move through check.
+     *
+     * @param move the castling move being checked
+     */
+    public boolean CastlingMoveCheck(ChessMove move){
+        ChessBoard board = getBoard();
+        ChessPiece curPiece = board.getPiece(move.getStartPosition());
+        int moveCurCol = move.getEndPosition().getColumn();
+        int moveEndCol = move.getEndPosition().getColumn();
+        int deltaC;
+
+        if(moveCurCol < moveEndCol) deltaC = 1;
+        else deltaC = -1;
+
+        while(moveCurCol != moveEndCol + deltaC){
+            ChessPosition curPos = new ChessPosition(move.getStartPosition().getRow(), moveCurCol);
+            board.addPiece(curPos, curPiece);
+            if(isInCheck(curPiece.getTeamColor())){
+                board.addPiece(move.getStartPosition(), curPiece);
+                return false;
+            }
+            board.addPiece(curPos, null);
+            moveCurCol += deltaC;
+        }
+        board.addPiece(move.getStartPosition(), curPiece);
         return true;
     }
 

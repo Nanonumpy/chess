@@ -49,7 +49,7 @@ public class ChessPiece {
         return type;
     }
 
-    public boolean getHasMoved() { return hasMoved;}
+    public boolean getHasMoved() {return hasMoved;}
 
     public void setHasMoved(boolean hasMoved) {this.hasMoved = hasMoved;}
 
@@ -210,6 +210,7 @@ public class ChessPiece {
             ChessPiece leftRook = board.getPiece(new ChessPosition(myPosition.getRow(), 1));
             ChessPiece rightRook = board.getPiece(new ChessPosition(myPosition.getRow(), 8));
 
+            // TODO: check if blocked move
             if(leftRook != null && !leftRook.getHasMoved()){
                 validMoves.add(new ChessMove(myPosition,
                         new ChessPosition(myPosition.getRow(), myPosition.getColumn()-2),
