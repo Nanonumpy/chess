@@ -15,10 +15,12 @@ public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
+    private boolean hasMoved;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
+        this.hasMoved = false;
     }
 
     /**
@@ -46,6 +48,10 @@ public class ChessPiece {
     public PieceType getPieceType() {
         return type;
     }
+
+    public boolean getHasMoved() { return hasMoved;}
+
+    public void setHasMoved(boolean hasMoved) {this.hasMoved = hasMoved;}
 
     @Override
     public String toString() {
@@ -187,6 +193,8 @@ public class ChessPiece {
 
     private List<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
         List<ChessMove> validMoves = new ArrayList<>();
+        ChessPiece piece = board.getPiece(myPosition);
+
         for(int deltaR = -1; deltaR <= 1; deltaR++){
             for(int deltaC = -1; deltaC <= 1; deltaC++){
                 ChessMove move = new ChessMove(myPosition, new ChessPosition(myPosition.getRow()+deltaR,
@@ -194,6 +202,23 @@ public class ChessPiece {
                 if(checkMove(board, move)){
                     validMoves.add(move);
                 }
+            }
+        }
+
+        // Castling
+        if(!piece.getHasMoved()){
+            ChessPiece leftRook = board.getPiece(new ChessPosition(myPosition.getRow(), 1));
+            ChessPiece rightRook = board.getPiece(new ChessPosition(myPosition.getRow(), 8));
+
+            if(leftRook != null && !leftRook.getHasMoved()){
+                validMoves.add(new ChessMove(myPosition,
+                        new ChessPosition(myPosition.getRow(), myPosition.getColumn()-2),
+                        null));
+            }
+            if(rightRook != null && !rightRook.getHasMoved()){
+                validMoves.add(new ChessMove(myPosition,
+                        new ChessPosition(myPosition.getRow(), myPosition.getColumn()+2),
+                        null));
             }
         }
 
@@ -257,6 +282,21 @@ public class ChessPiece {
 
         }
 
+        // en passant
+        if(firstMove){
+            ChessPiece leftPawn = board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn()-1));
+            ChessPiece rightPawn = board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn()+1));
+            if(leftPawn != null && leftPawn.getPieceType() == PieceType.PAWN && leftPawn.getTeamColor() != piece.getTeamColor()){
+                validMoves.add(new ChessMove(myPosition,
+                        new ChessPosition(myPosition.getRow()+dir, myPosition.getColumn()-1),
+                        null));
+            }
+            if(rightPawn != null && rightPawn.getPieceType() == PieceType.PAWN && rightPawn.getTeamColor() != piece.getTeamColor()){
+                validMoves.add(new ChessMove(myPosition,
+                        new ChessPosition(myPosition.getRow()+dir, myPosition.getColumn()+1),
+                        null));
+            }
+        }
 
 
         return validMoves;
