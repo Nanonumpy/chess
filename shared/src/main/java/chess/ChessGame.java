@@ -108,8 +108,28 @@ public class ChessGame {
         if(move.getPromotionPiece() != null){
             piece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
         }
+
         board.addPiece(move.getStartPosition(), null);
         board.addPiece(move.getEndPosition(), piece);
+
+        // Castling also moves the designated rook next to the king
+        if(piece.getPieceType() == ChessPiece.PieceType.KING
+                && Math.abs(move.getEndPosition().getColumn() - move.getStartPosition().getColumn()) > 1){
+
+            int row = move.getStartPosition().getRow();
+            int startColumn = move.getStartPosition().getColumn();
+            int endColumn = move.getEndPosition().getColumn();
+
+            int rookStartCol = (startColumn < endColumn) ? 8: 1;
+            int rookEndCol = (rookStartCol == 8) ? endColumn - 1 : endColumn + 1;
+            ChessPosition rookStartPos = new ChessPosition(row, rookStartCol);
+            ChessPosition rookEndPos = new ChessPosition(row, rookEndCol);
+
+            ChessPiece rook = board.getPiece(rookStartPos);
+            board.addPiece(rookStartPos, null);
+            board.addPiece(rookEndPos, rook);
+        }
+
         setBoard(board);
         piece.setHasMoved(true);
         if(getTeamTurn() == TeamColor.BLACK) setTeamTurn(TeamColor.WHITE);
