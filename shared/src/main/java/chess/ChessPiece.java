@@ -135,7 +135,7 @@ public class ChessPiece {
         ChessPosition endPosition = move.getEndPosition();
         int r = endPosition.getRow();
         int c = endPosition.getColumn();
-        if(r <= 0 || r > 8 || c <= 0 || c > 8) return false;
+        if(r <= 0 || r > 8 || c <= 0 || c > 8) {return false;}
 
         ChessPiece piece = board.getPiece(move.getStartPosition());
         ChessPiece otherPiece = board.getPiece(endPosition);
@@ -150,7 +150,7 @@ public class ChessPiece {
         ChessMove move = new ChessMove(myPosition, new ChessPosition(r, c), null);
         while(checkMove(board, move)){
             validMoves.add(move);
-            if(board.getPiece(new ChessPosition(r, c)) != null) break;
+            if(board.getPiece(new ChessPosition(r, c)) != null) {break;}
             r += deltaR;
             c += deltaC;
             move = new ChessMove(myPosition, new ChessPosition(r, c), null);
@@ -173,7 +173,7 @@ public class ChessPiece {
         List<ChessMove> validMoves = new ArrayList<>();
         for(int deltaR = -1; deltaR <= 1; deltaR++){
             for(int deltaC = -1; deltaC <= 1; deltaC ++){
-                if(Math.abs(deltaR) + Math.abs(deltaC) != 1) continue;
+                if(Math.abs(deltaR) + Math.abs(deltaC) != 1) {continue;}
                 validMoves.addAll(moveTillEnd(board, myPosition, deltaR, deltaC));
             }
         }
@@ -185,7 +185,7 @@ public class ChessPiece {
         List<ChessMove> validMoves = new ArrayList<>();
         for(int deltaR = -2; deltaR <= 2; deltaR++){
             for(int deltaC = -2; deltaC <= 2; deltaC++){
-                if(Math.abs(deltaR) + Math.abs(deltaC) != 3) continue;
+                if(Math.abs(deltaR) + Math.abs(deltaC) != 3) {continue;}
                 ChessMove move = new ChessMove(myPosition, new ChessPosition(myPosition.getRow()+deltaR,
                         myPosition.getColumn() + deltaC), null);
                 if(checkMove(board, move)){
@@ -215,7 +215,7 @@ public class ChessPiece {
         if(!piece.getHasMoved()){
             for(int rookCol: new int[]{1, 8}){
                 ChessPiece rook = board.getPiece(new ChessPosition(myPosition.getRow(), rookCol));
-                if(rook == null || rook.getPieceType() != PieceType.ROOK || rook.getHasMoved()) continue;
+                if(rook == null || rook.getPieceType() != PieceType.ROOK || rook.getHasMoved()) {continue;}
 
 
                 int delta = (myPosition.getColumn() < rookCol) ? 1 : -1;
@@ -231,9 +231,9 @@ public class ChessPiece {
                     curCol += delta;
                 }
 
-                if(!blocked) validMoves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow(),
+                if(!blocked) {validMoves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow(),
                         myPosition.getColumn()+2*delta),
-                        null));
+                        null));}
             }
         }
 
@@ -328,7 +328,7 @@ public class ChessPiece {
     private List<ChessMove> promoteMoves(ChessPosition startPosition, ChessPosition endPosition) {
         List<ChessMove> validMoves = new ArrayList<>();
         for(PieceType promotion : PieceType.values()){
-            if(promotion == PieceType.KING || promotion == PieceType.PAWN) continue;
+            if(promotion == PieceType.KING || promotion == PieceType.PAWN) {continue;}
             validMoves.add(new ChessMove(startPosition, endPosition, promotion));
         }
         return validMoves;

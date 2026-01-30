@@ -57,7 +57,7 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessBoard board = getBoard();
         ChessPiece curPiece = board.getPiece(startPosition);
-        if(curPiece == null) return null;
+        if(curPiece == null) {return null;}
 
         List<ChessMove> validMoves = new ArrayList<>();
         for(ChessMove move : curPiece.pieceMoves(board, startPosition)){
@@ -65,18 +65,18 @@ public class ChessGame {
             // King should never be in check during move (castling)
             if(curPiece.getPieceType() == ChessPiece.PieceType.KING
                     && Math.abs(move.getEndPosition().getColumn() - move.getStartPosition().getColumn()) > 1){
-                if(CastlingMoveCheck(move)) validMoves.add(move);
+                if(castlingMoveCheck(move)) {validMoves.add(move);}
                 continue;
             }
 
             ChessPiece capturedPiece = board.getPiece(move.getEndPosition());
             ChessPiece replacementPiece;
-            if (move.getPromotionPiece() == null) replacementPiece = curPiece;
-            else replacementPiece = new ChessPiece(curPiece.getTeamColor(), move.getPromotionPiece());
+            if (move.getPromotionPiece() == null) {replacementPiece = curPiece;}
+            else {replacementPiece = new ChessPiece(curPiece.getTeamColor(), move.getPromotionPiece());}
 
             board.addPiece(move.getStartPosition(), null);
             board.addPiece(move.getEndPosition(), replacementPiece);
-            if (!isInCheck(curPiece.getTeamColor())) validMoves.add(move);
+            if (!isInCheck(curPiece.getTeamColor())) {validMoves.add(move);}
             board.addPiece(move.getStartPosition(), curPiece);
             board.addPiece(move.getEndPosition(), capturedPiece);
         }
@@ -150,13 +150,13 @@ public class ChessGame {
             for(int c=1 ; c<=8; c++){
                 ChessPosition curPos = new ChessPosition(r, c);
                 ChessPiece curPiece = getBoard().getPiece(curPos);
-                if(curPiece != null && curPiece.getTeamColor() != getTeamTurn()) curPiece.setCanPassant(false);
+                if(curPiece != null && curPiece.getTeamColor() != getTeamTurn()) {curPiece.setCanPassant(false);}
             }
         }
         setBoard(board);
         piece.setHasMoved(true);
-        if(getTeamTurn() == TeamColor.BLACK) setTeamTurn(TeamColor.WHITE);
-        else setTeamTurn(TeamColor.BLACK);
+        if(getTeamTurn() == TeamColor.BLACK) {setTeamTurn(TeamColor.WHITE);}
+        else {setTeamTurn(TeamColor.BLACK);}
     }
 
     private ChessPosition getKingPosition(TeamColor teamColor){
@@ -180,9 +180,9 @@ public class ChessGame {
             for(int c=1 ; c<=8; c++){
                 ChessPosition curPos = new ChessPosition(r, c);
                 ChessPiece curPiece = board.getPiece(curPos);
-                if(curPiece == null) continue;
+                if(curPiece == null) {continue;}
                 for(ChessMove curMove : curPiece.pieceMoves(board, curPos)) {
-                    if (curMove.getEndPosition().equals(pos)) return true;
+                    if (curMove.getEndPosition().equals(pos)) {return true;}
                 }
             }
         }
@@ -212,7 +212,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        if(!isInCheck(teamColor) || kingCanMove(teamColor)) return false;
+        if(!isInCheck(teamColor) || kingCanMove(teamColor)) {return false;}
 
         return noPieceMoves(teamColor);
     }
@@ -225,7 +225,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        if(isInCheck(teamColor) || kingCanMove(teamColor)) return false;
+        if(isInCheck(teamColor) || kingCanMove(teamColor)) {return false;}
 
         return noPieceMoves(teamColor);
     }
@@ -235,8 +235,8 @@ public class ChessGame {
             for(int c=1 ; c<=8; c++){
                 ChessPosition curPos = new ChessPosition(r, c);
                 ChessPiece curPiece = getBoard().getPiece(curPos);
-                if(curPiece == null || curPiece.getTeamColor() != teamColor) continue;
-                if(!validMoves(curPos).isEmpty()) return false;
+                if(curPiece == null || curPiece.getTeamColor() != teamColor) {continue;}
+                if(!validMoves(curPos).isEmpty()) {return false;}
             }
         }
 
@@ -249,15 +249,12 @@ public class ChessGame {
      *
      * @param move the castling move being checked
      */
-    public boolean CastlingMoveCheck(ChessMove move){
+    public boolean castlingMoveCheck(ChessMove move){
         ChessBoard board = getBoard();
         ChessPiece curPiece = board.getPiece(move.getStartPosition());
         int moveCurCol = move.getStartPosition().getColumn();
         int moveEndCol = move.getEndPosition().getColumn();
-        int deltaC;
-
-        if(moveCurCol < moveEndCol) deltaC = 1;
-        else deltaC = -1;
+        int deltaC = (moveCurCol < moveEndCol) ? 1 : -1;
 
         while(moveCurCol != moveEndCol + deltaC){
             ChessPosition curPos = new ChessPosition(move.getStartPosition().getRow(), moveCurCol);
