@@ -145,8 +145,8 @@ public class ChessGame {
             piece.setCanPassant(true);
         }
 
-
-        for(int r=1; r<=8; r++){
+        // En passant chance is only for one turn
+        for(int r: new int[] {4,5}){
             for(int c=1 ; c<=8; c++){
                 ChessPosition curPos = new ChessPosition(r, c);
                 ChessPiece curPiece = getBoard().getPiece(curPos);
@@ -214,16 +214,7 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
         if(!isInCheck(teamColor) || kingCanMove(teamColor)) return false;
 
-        for(int r=1; r<=8; r++){
-            for(int c=1 ; c<=8; c++){
-                ChessPosition curPos = new ChessPosition(r, c);
-                ChessPiece curPiece = getBoard().getPiece(curPos);
-                if(curPiece == null || curPiece.getTeamColor() != teamColor) continue;
-                if(!validMoves(curPos).isEmpty()) return false;
-            }
-        }
-
-        return true;
+        return noPieceMoves(teamColor);
     }
 
     /**
@@ -236,6 +227,10 @@ public class ChessGame {
     public boolean isInStalemate(TeamColor teamColor) {
         if(isInCheck(teamColor) || kingCanMove(teamColor)) return false;
 
+        return noPieceMoves(teamColor);
+    }
+
+    public boolean noPieceMoves(TeamColor teamColor){
         for(int r=1; r<=8; r++){
             for(int c=1 ; c<=8; c++){
                 ChessPosition curPos = new ChessPosition(r, c);
