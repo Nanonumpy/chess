@@ -16,11 +16,13 @@ public class ChessPiece {
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
     private boolean hasMoved;
+    private boolean canBePassanted;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
         this.hasMoved = false;
+        this.canBePassanted = false;
     }
 
     /**
@@ -52,6 +54,10 @@ public class ChessPiece {
     public boolean getHasMoved() {return hasMoved;}
 
     public void setHasMoved(boolean hasMoved) {this.hasMoved = hasMoved;}
+
+    public boolean getCanPassant() {return canBePassanted;}
+
+    public void setCanPassant(boolean canBePassanted) {this.canBePassanted = canBePassanted;}
 
     @Override
     public String toString() {
@@ -292,19 +298,27 @@ public class ChessPiece {
         }
 
         // en passant
-        if(firstMove){
-            ChessPiece leftPawn = board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn()-1));
-            ChessPiece rightPawn = board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn()+1));
-            if(leftPawn != null && leftPawn.getPieceType() == PieceType.PAWN && leftPawn.getTeamColor() != piece.getTeamColor()){
-                validMoves.add(new ChessMove(myPosition,
-                        new ChessPosition(myPosition.getRow()+dir, myPosition.getColumn()-1),
-                        null));
-            }
-            if(rightPawn != null && rightPawn.getPieceType() == PieceType.PAWN && rightPawn.getTeamColor() != piece.getTeamColor()){
-                validMoves.add(new ChessMove(myPosition,
-                        new ChessPosition(myPosition.getRow()+dir, myPosition.getColumn()+1),
-                        null));
-            }
+        ChessPiece leftPawn = (myPosition.getColumn() > 1)
+                ? board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn()-1))
+                : null;
+        ChessPiece rightPawn = (myPosition.getColumn() < 8)
+                ? board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn()+1))
+                : null;
+        if(leftPawn != null
+                && leftPawn.getPieceType() == PieceType.PAWN
+                && leftPawn.getTeamColor() != piece.getTeamColor()
+                && leftPawn.getCanPassant()){
+            validMoves.add(new ChessMove(myPosition,
+                    new ChessPosition(myPosition.getRow()+dir, myPosition.getColumn()-1),
+                    null));
+        }
+        if(rightPawn != null
+                && rightPawn.getPieceType() == PieceType.PAWN
+                && rightPawn.getTeamColor() != piece.getTeamColor()
+                && rightPawn.getCanPassant()){
+            validMoves.add(new ChessMove(myPosition,
+                    new ChessPosition(myPosition.getRow()+dir, myPosition.getColumn()+1),
+                    null));
         }
 
 

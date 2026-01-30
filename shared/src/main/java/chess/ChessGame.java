@@ -130,6 +130,29 @@ public class ChessGame {
             board.addPiece(rookEndPos, rook);
         }
 
+        // En passant removes a piece not on the destination square
+        ChessPosition passantPosition =
+                new ChessPosition(move.getStartPosition().getRow(), move.getEndPosition().getColumn());
+        ChessPiece passantPiece = board.getPiece(passantPosition);
+        if(piece.getPieceType() == ChessPiece.PieceType.PAWN
+                && Math.abs(move.getEndPosition().getColumn() - move.getStartPosition().getColumn()) == 1
+                && passantPiece != null
+                && passantPiece.getCanPassant()){
+            board.addPiece(passantPosition, null);
+        }
+        if(piece.getPieceType() == ChessPiece.PieceType.PAWN
+                && Math.abs(move.getEndPosition().getRow() - move.getStartPosition().getRow()) == 2){
+            piece.setCanPassant(true);
+        }
+
+
+        for(int r=1; r<=8; r++){
+            for(int c=1 ; c<=8; c++){
+                ChessPosition curPos = new ChessPosition(r, c);
+                ChessPiece curPiece = getBoard().getPiece(curPos);
+                if(curPiece != null && curPiece.getTeamColor() != getTeamTurn()) curPiece.setCanPassant(false);
+            }
+        }
         setBoard(board);
         piece.setHasMoved(true);
         if(getTeamTurn() == TeamColor.BLACK) setTeamTurn(TeamColor.WHITE);
