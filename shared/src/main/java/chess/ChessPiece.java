@@ -215,7 +215,7 @@ public class ChessPiece {
         if(!piece.getHasMoved()){
             for(int rookCol: new int[]{1, 8}){
                 ChessPiece rook = board.getPiece(new ChessPosition(myPosition.getRow(), rookCol));
-                if(rook == null || rook.getHasMoved()) continue;
+                if(rook == null || rook.getPieceType() != PieceType.ROOK || rook.getHasMoved()) continue;
 
 
                 int delta = (myPosition.getColumn() < rookCol) ? 1 : -1;
