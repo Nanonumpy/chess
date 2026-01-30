@@ -234,7 +234,7 @@ public class ChessGame {
     public boolean CastlingMoveCheck(ChessMove move){
         ChessBoard board = getBoard();
         ChessPiece curPiece = board.getPiece(move.getStartPosition());
-        int moveCurCol = move.getEndPosition().getColumn();
+        int moveCurCol = move.getStartPosition().getColumn();
         int moveEndCol = move.getEndPosition().getColumn();
         int deltaC;
 
@@ -245,6 +245,7 @@ public class ChessGame {
             ChessPosition curPos = new ChessPosition(move.getStartPosition().getRow(), moveCurCol);
             board.addPiece(curPos, curPiece);
             if(isInCheck(curPiece.getTeamColor())){
+                board.addPiece(curPos, null);
                 board.addPiece(move.getStartPosition(), curPiece);
                 return false;
             }
