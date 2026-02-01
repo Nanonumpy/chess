@@ -1,10 +1,7 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.AuthDAO;
-import dataaccess.GameDAO;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
+import dataaccess.*;
 import model.AuthData;
 import org.junit.jupiter.api.*;
 import passoff.model.*;
@@ -45,6 +42,29 @@ public class GameServiceTests {
     public void createBadGame() {
         assertThrows(UnauthorizedException.class, () ->
                 gameService.createGame("token4", "badGame")
+        );
+    }
+
+    @Test
+    @DisplayName("Join Game")
+    public void joinGame() throws UnauthorizedException, DataAccessException, AlreadyTakenException {
+        gameService.joinGame("token1", new JoinGameRequest(ChessGame.TeamColor.WHITE, 1));
+    }
+
+    @Test
+    @DisplayName("Join game that doesn't exist")
+    public void joinBadGame() {
+        assertThrows(DataAccessException.class, () ->
+                gameService.joinGame("token1", new JoinGameRequest(ChessGame.TeamColor.WHITE, 2))
+        );
+    }
+
+    @Test
+    @DisplayName("Attempt to join taken slot in game")
+    public void joinTakenGame() throws UnauthorizedException, DataAccessException, AlreadyTakenException {
+        gameService.joinGame("token1", new JoinGameRequest(ChessGame.TeamColor.WHITE, 1));
+        assertThrows(AlreadyTakenException.class, () ->
+                gameService.joinGame("token2", new JoinGameRequest(ChessGame.TeamColor.WHITE, 1))
         );
     }
 
