@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import passoff.model.TestAuthResult;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,9 +44,9 @@ public class AuthServiceTests {
     @Test
     @DisplayName("Validate Existing Auth")
     public void validateAuth() throws UnauthorizedException {
-        assertDoesNotThrow(() -> {
-            authService.validateAuth("token2");
-        });
+        assertDoesNotThrow(() ->
+            authService.validateAuth("token2")
+        );
         AuthData authData = authService.validateAuth("token2");
 
         Assertions.assertEquals("token2", authData.authToken(), "Auth Data not stored");
@@ -56,33 +55,33 @@ public class AuthServiceTests {
     @Test
     @DisplayName("Validate Auth that doesn't exist")
     public void validateMissingAuth() {
-        assertThrows(UnauthorizedException.class, () -> {
-            authService.validateAuth("token3");
-        });
+        assertThrows(UnauthorizedException.class, () ->
+            authService.validateAuth("token3")
+        );
     }
 
     @Test
     @DisplayName("Delete Existing Auth")
-    public void deleteAuth() throws UnauthorizedException {
-        assertDoesNotThrow(() -> {
-            authService.deleteAuth(authService.validateAuth("token2"));
-        });
+    public void deleteAuth() {
+        assertDoesNotThrow(() ->
+            authService.deleteAuth(authService.validateAuth("token2"))
+        );
     }
 
     @Test
     @DisplayName("Delete Auth that doesn't exist")
     public void deleteMissingAuth() {
-        assertDoesNotThrow(() -> {
-            authService.deleteAuth(new AuthData("bad", "bad"));
-        });
+        assertDoesNotThrow(() ->
+            authService.deleteAuth(new AuthData("bad", "bad"))
+        );
     }
 
     @Test
-    @DisplayName("clear Auths")
+    @DisplayName("Clear Auths")
     public void clear() {
-        assertDoesNotThrow(() -> {
-            authService.clear();
-        });
+        assertDoesNotThrow(() ->
+            authService.clear()
+        );
         assertNull(authDAO.getAuth("token2"));
     }
 
