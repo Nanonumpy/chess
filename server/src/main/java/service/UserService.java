@@ -21,28 +21,30 @@ public class UserService {
         userDAO.clear();
     }
 
-    public AuthData register(UserData userData) throws AlreadyTakenException{
+    public LoginResult register(UserData userData) throws AlreadyTakenException{
         UserData checkData = userDAO.getUser(userData.username());
 
         if(checkData != null){throw new AlreadyTakenException("Username already taken");}
 
         userDAO.createUser(userData);
 
-        return authService.generateAuth(userData.username());
+        AuthData loginAuth = authService.generateAuth(userData.username());
+        return new LoginResult(loginAuth.username(), loginAuth.authToken());
 
     }
 
-    public AuthData login(LoginRequest loginRequest) throws UnauthorizedException {
+    public LoginResult login(LoginRequest loginRequest) throws UnauthorizedException {
         UserData checkData = userDAO.getUser(loginRequest.username());
 
         if(checkData == null || !checkData.password().equals(loginRequest.password())){throw new UnauthorizedException("Invalid credentials");}
 
-        return authService.generateAuth(loginRequest.username());
+        AuthData loginAuth = authService.generateAuth(loginRequest.username());
+        return new LoginResult(loginAuth.username(), loginAuth.authToken());
     }
 
     public void logout(String authToken) throws UnauthorizedException{
-
         AuthData authData = authService.validateAuth(authToken);
         authService.deleteAuth(authData);
+        userDAO.deleteUser(authData.username());
     }
 }

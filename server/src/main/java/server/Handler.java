@@ -24,18 +24,20 @@ public class Handler {
         gson = new Gson();
     }
 
-    public String register(String body) throws JsonSyntaxException, AlreadyTakenException {
+    public String register(String body) throws JsonSyntaxException, AlreadyTakenException, InvalidRequest {
         UserData userData = gson.fromJson(body, UserData.class);
-        AuthData authData = userService.register(userData);
+        if(userData.username() == null || userData.password() == null || userData.email() == null){throw new InvalidRequest("Missing field");}
+        LoginResult loginResult = userService.register(userData);
 
-        return gson.toJson(authData);
+        return gson.toJson(loginResult);
     }
 
-    public String login(String body) throws JsonSyntaxException, UnauthorizedException {
+    public String login(String body) throws JsonSyntaxException, UnauthorizedException, InvalidRequest {
         LoginRequest loginRequest = gson.fromJson(body, LoginRequest.class);
-        AuthData authData = userService.login(loginRequest);
+        if(loginRequest.username() == null || loginRequest.password() == null){throw new InvalidRequest("Missing field");}
+        LoginResult loginResult = userService.login(loginRequest);
 
-        return gson.toJson(authData);
+        return gson.toJson(loginResult);
     }
 
     public void logout(String authToken) throws UnauthorizedException {
@@ -48,15 +50,17 @@ public class Handler {
         return gson.toJson(gameList);
     }
 
-    public String createGame(String authToken, String body) throws UnauthorizedException {
-        String gameName = gson.fromJson(body, String.class);
+    public String createGame(String authToken, String body) throws UnauthorizedException, InvalidRequest {
+        String gameName = gson.fromJson(body, CreateGameRequest.class).gameName();
+        if(gameName == null){throw new InvalidRequest("No game name provided");}
         CreateGameResult gameID = gameService.createGame(authToken, gameName);
 
         return gson.toJson(gameID);
     }
 
-    public void joinGame(String authToken, String body) throws UnauthorizedException, DataAccessException, AlreadyTakenException {
+    public void joinGame(String authToken, String body) throws UnauthorizedException, DataAccessException, AlreadyTakenException, InvalidRequest {
         JoinGameRequest joinRequest = gson.fromJson(body, JoinGameRequest.class);
+        if(joinRequest.gameID() == 0 || joinRequest.playerColor() == null){throw new InvalidRequest("Missing fields");}
         gameService.joinGame(authToken, joinRequest);
     }
 

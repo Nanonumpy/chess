@@ -1,21 +1,116 @@
 package server;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import dataaccess.DataAccessException;
+import dataaccess.MemoryAuthDAO;
+import dataaccess.MemoryGameDAO;
+import dataaccess.MemoryUserDAO;
 import io.javalin.*;
+import io.javalin.http.Context;
+import service.AlreadyTakenException;
+import service.InvalidRequest;
+import service.UnauthorizedException;
+
+import java.util.Map;
 
 public class Server {
 
     private final Javalin javalin;
+    private final Handler handler;
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
-
+        handler = new Handler(new MemoryAuthDAO(), new MemoryGameDAO(), new MemoryUserDAO());
         // Register your endpoints and exception handlers here.
 
     }
 
     public int run(int desiredPort) {
-        javalin.start(desiredPort);
+        javalin.post("/user", this::register)
+                .post("/session", this::login)
+                .delete("session", this::logout)
+                .get("/game", this::listGames)
+                .post("/game", this::createGame)
+                .put("/game", this::joinGame)
+                .delete("/db", this::clear)
+                .exception(JsonSyntaxException.class, this::badRequest)
+                .exception(InvalidRequest.class, this::badRequest)
+                .exception(UnauthorizedException.class, this::unauthorized)
+                .exception(AlreadyTakenException.class, this::alreadyTaken)
+                .exception(DataAccessException.class, this::dataAccess)
+                .exception(Exception.class, this::internalError)
+                .start(desiredPort);
         return javalin.port();
+    }
+
+    private void register(Context ctx) throws JsonSyntaxException, AlreadyTakenException, InvalidRequest {
+        String body = handler.register(ctx.body());
+        ctx.status(200);
+        ctx.json(body);
+    }
+
+    private void login(Context ctx) throws JsonSyntaxException, UnauthorizedException, InvalidRequest {
+        String body = handler.login(ctx.body());
+        ctx.status(200);
+        ctx.json(body);
+    }
+
+    private void logout(Context ctx) throws UnauthorizedException {
+        handler.logout(ctx.header("Authorization"));
+        ctx.status(200);
+    }
+
+    private void listGames(Context ctx) throws UnauthorizedException {
+        String body = handler.listGames(ctx.header("Authorization"));
+        ctx.status(200);
+        ctx.json(body);
+    }
+
+    private void createGame(Context ctx) throws UnauthorizedException, InvalidRequest {
+        String body = handler.createGame(ctx.header("Authorization"), ctx.body());
+        ctx.status(200);
+        ctx.json(body);
+    }
+
+    private void joinGame(Context ctx) throws UnauthorizedException, DataAccessException, AlreadyTakenException, InvalidRequest {
+        handler.joinGame(ctx.header("Authorization"), ctx.body());
+        ctx.status(200);
+    }
+
+    private void clear(Context ctx) {
+        handler.clear();
+        ctx.status(200);
+    }
+
+    private void badRequest(Exception e, Context ctx) {
+        var body = new Gson().toJson(Map.of("message", "Error: bad request"));
+        ctx.status(400);
+        ctx.json(body);
+    }
+
+    private void unauthorized(Exception e, Context ctx) {
+        var body = new Gson().toJson(Map.of("message", "Error: unauthorized"));
+        ctx.status(401);
+        ctx.json(body);
+    }
+
+    private void alreadyTaken(Exception e, Context ctx) {
+        var body = new Gson().toJson(Map.of("message", "Error: already taken"));
+        ctx.status(403);
+        ctx.json(body);
+    }
+
+    private void dataAccess(Exception e, Context ctx) {
+        var body = new Gson().toJson(Map.of("message", "Error: not found"));
+        ctx.status(404);
+        ctx.json(body);
+    }
+
+    private void internalError(Exception e, Context ctx) {
+        var body = new Gson().toJson(Map.of("message", String.format("Error: %s", e.getMessage())));
+        ctx.status(500);
+        ctx.json(body);
     }
 
     public void stop() {
