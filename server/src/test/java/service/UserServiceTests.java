@@ -11,13 +11,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UserServiceTests {
     private UserService userService;
+    private String auth;
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws AlreadyTakenException {
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
         userService = new UserService(userDAO, authDAO);
-        assertDoesNotThrow(() -> userService.register(new UserData("user1", "pass", "email")));
+        auth = userService.register(new UserData("user1", "pass", "email")).authToken();
     }
 
     @Test
@@ -55,6 +56,22 @@ public class UserServiceTests {
     public void loginBadPass() {
         assertThrows(UnauthorizedException.class, () ->
                 userService.login(new LoginRequest("user1", "idk"))
+        );
+    }
+
+    @Test
+    @DisplayName("Logout")
+    public void logout() throws UnauthorizedException {
+        assertDoesNotThrow(() ->
+                userService.logout(auth)
+        );
+    }
+
+    @Test
+    @DisplayName("Logout Bad Token")
+    public void logoutBad() {
+        assertThrows(UnauthorizedException.class, () ->
+                userService.logout("badToken")
         );
     }
 }

@@ -45,6 +45,5 @@ public class UserService {
     public void logout(String authToken) throws UnauthorizedException{
         AuthData authData = authService.validateAuth(authToken);
         authService.deleteAuth(authData);
-        userDAO.deleteUser(authData.username());
     }
 }
