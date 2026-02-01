@@ -36,14 +36,20 @@ public class GameService {
         GameData gameData = gameDAO.getGame(joinRequest.gameID());
 
         if(gameData == null){throw new DataAccessException("Game does not exist");}
-        if(joinRequest.playerColor() == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null){throw new AlreadyTakenException("White player already in game");}
-        if(joinRequest.playerColor() == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null){throw new AlreadyTakenException("Black player already in game");}
+        if(joinRequest.playerColor() == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null){
+            throw new AlreadyTakenException("White player already in game");
+        }
+        if(joinRequest.playerColor() == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null){
+            throw new AlreadyTakenException("Black player already in game");
+        }
 
         if(joinRequest.playerColor() == ChessGame.TeamColor.WHITE){
-            gameDAO.updateGame(new GameData(joinRequest.gameID(), authData.username(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
+            gameDAO.updateGame(new GameData(joinRequest.gameID(), authData.username(),
+                    gameData.blackUsername(), gameData.gameName(), gameData.game()));
         }
         else{
-            gameDAO.updateGame(new GameData(joinRequest.gameID(), gameData.whiteUsername(), authData.username(), gameData.gameName(), gameData.game()));
+            gameDAO.updateGame(new GameData(joinRequest.gameID(), gameData.whiteUsername(),
+                    authData.username(), gameData.gameName(), gameData.game()));
         }
     }
 
