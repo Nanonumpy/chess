@@ -3,9 +3,12 @@ package dataaccess;
 import model.GameData;
 
 public interface GameDAO {
+
+    void clear();
+
     void createGame(GameData data);
 
-    GameData getGame(String gameID);
+    GameData getGame(int gameID);
 
     void updateGame(GameData data);
 
