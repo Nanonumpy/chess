@@ -17,8 +17,8 @@ public class AuthService {
         authDAO.clear();
     }
 
-    public AuthData generateAuth(UserData userData) {
-        AuthData authData = new AuthData(userData.username(), UUID.randomUUID().toString());
+    public AuthData generateAuth(String username) {
+        AuthData authData = new AuthData(username, UUID.randomUUID().toString());
         authDAO.createAuth(authData);
 
         return authData;

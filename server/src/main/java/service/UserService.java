@@ -28,17 +28,16 @@ public class UserService {
 
         userDAO.createUser(userData);
 
-        return authService.generateAuth(userData);
+        return authService.generateAuth(userData.username());
 
     }
 
-    public AuthData login(UserData userData) throws DataAccessException, UnauthorizedException {
-        UserData checkData = userDAO.getUser(userData.username());
+    public AuthData login(LoginRequest loginRequest) throws UnauthorizedException {
+        UserData checkData = userDAO.getUser(loginRequest.username());
 
-        if(checkData == null){throw new DataAccessException("No user found for given username");}
-        if(!checkData.password().equals(userData.password())){throw new UnauthorizedException("Password does not match");}
+        if(checkData == null || !checkData.password().equals(loginRequest.password())){throw new UnauthorizedException("Invalid credentials");}
 
-        return authService.generateAuth(userData);
+        return authService.generateAuth(loginRequest.username());
     }
 
     public void logout(String authToken) throws UnauthorizedException{

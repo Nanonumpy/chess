@@ -21,35 +21,35 @@ public class GameService {
         gameDAO.clear();
     }
 
-    public int createGame(String authToken, String gameName) throws UnauthorizedException{
+    public CreateGameResult createGame(String authToken, String gameName) throws UnauthorizedException{
         authService.validateAuth(authToken);
 
         GameData gameData = new GameData(nextID++, null, null, gameName, new ChessGame());
         gameDAO.createGame(gameData);
 
-        return gameData.gameID();
+        return new CreateGameResult(gameData.gameID());
     }
 
-    public void joinGame(String authToken, ChessGame.TeamColor teamColor, int gameID) throws UnauthorizedException, DataAccessException, AlreadyTakenException {
+    public void joinGame(String authToken, JoinGameRequest joinRequest) throws UnauthorizedException, DataAccessException, AlreadyTakenException {
         AuthData authData = authService.validateAuth(authToken);
 
-        GameData gameData = gameDAO.getGame(gameID);
+        GameData gameData = gameDAO.getGame(joinRequest.gameID());
 
         if(gameData == null){throw new DataAccessException("Game does not exist");}
-        if(teamColor == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null){throw new AlreadyTakenException("White player already in game");}
-        if(teamColor == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null){throw new AlreadyTakenException("Black player already in game");}
+        if(joinRequest.playerColor() == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null){throw new AlreadyTakenException("White player already in game");}
+        if(joinRequest.playerColor() == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null){throw new AlreadyTakenException("Black player already in game");}
 
-        if(teamColor == ChessGame.TeamColor.WHITE){
-            gameDAO.updateGame(new GameData(gameID, authData.username(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
+        if(joinRequest.playerColor() == ChessGame.TeamColor.WHITE){
+            gameDAO.updateGame(new GameData(joinRequest.gameID(), authData.username(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
         }
         else{
-            gameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), authData.username(), gameData.gameName(), gameData.game()));
+            gameDAO.updateGame(new GameData(joinRequest.gameID(), gameData.whiteUsername(), authData.username(), gameData.gameName(), gameData.game()));
         }
     }
 
-    public GameData[] listGames(String authToken) throws UnauthorizedException {
+    public ListGamesResult listGames(String authToken) throws UnauthorizedException {
         authService.validateAuth(authToken);
 
-        return gameDAO.listGames();
+        return new ListGamesResult(gameDAO.listGames());
     }
 }
