@@ -13,8 +13,7 @@ import server.Server;
 import java.net.HttpURLConnection;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GameServiceTests {
     private GameDAO gameDAO;
@@ -34,10 +33,27 @@ public class GameServiceTests {
     }
 
     @Test
+    @DisplayName("Create Game")
+    public void createGame() throws UnauthorizedException {
+        int gameID = gameService.createGame("token1", "newGame").gameID();
+
+        assertEquals(2, gameID);
+    }
+
+    @Test
     @DisplayName("Create Game With Bad Token")
-    public void generateAuth() {
+    public void createBadGame() {
         assertThrows(UnauthorizedException.class, () ->
                 gameService.createGame("token4", "badGame")
         );
+    }
+
+    @Test
+    @DisplayName("Clear games")
+    public void clear() throws UnauthorizedException {
+        assertDoesNotThrow(() ->
+                gameService.clear()
+        );
+        assertEquals(0, gameService.listGames("token2").games().length);
     }
 }
