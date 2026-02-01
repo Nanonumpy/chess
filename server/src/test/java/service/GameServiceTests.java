@@ -3,22 +3,20 @@ package service;
 import chess.ChessGame;
 import dataaccess.*;
 import model.AuthData;
+import model.GameData;
 import org.junit.jupiter.api.*;
 import passoff.model.*;
-import server.Server;
 
-import java.net.HttpURLConnection;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GameServiceTests {
-    private GameDAO gameDAO;
     private GameService gameService;
 
     @BeforeEach
-    public void setup() throws UnauthorizedException {
-        gameDAO = new MemoryGameDAO();
+    public void setup() {
+        GameDAO gameDAO = new MemoryGameDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
         authDAO.createAuth(new AuthData("token1", "user1"));
         authDAO.createAuth(new AuthData("token2", "user2"));
@@ -65,6 +63,22 @@ public class GameServiceTests {
         gameService.joinGame("token1", new JoinGameRequest(ChessGame.TeamColor.WHITE, 1));
         assertThrows(AlreadyTakenException.class, () ->
                 gameService.joinGame("token2", new JoinGameRequest(ChessGame.TeamColor.WHITE, 1))
+        );
+    }
+
+    @Test
+    @DisplayName("List Games")
+    public void listGames() throws UnauthorizedException {
+        GameData[] games = gameService.listGames("token1").games();
+
+        assertEquals(1, games.length);
+    }
+
+    @Test
+    @DisplayName("List Games Unauthorized")
+    public void listBadGames() {
+        assertThrows(UnauthorizedException.class, () ->
+                gameService.listGames("token4")
         );
     }
 
