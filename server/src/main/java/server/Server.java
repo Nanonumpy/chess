@@ -2,10 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.*;
 import io.javalin.*;
 import io.javalin.http.Context;
 import service.AlreadyTakenException;
@@ -19,9 +16,15 @@ public class Server {
     private final Javalin javalin;
     private final Handler handler;
 
-    public Server() {
+    public Server(){
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        handler = new Handler(new MemoryAuthDAO(), new MemoryGameDAO(), new MemoryUserDAO());
+        Handler temp;
+        try {
+            temp = new Handler(new DatabaseAuthDAO(), new DatabaseGameDAO(), new DatabaseUserDAO());
+        } catch (DataAccessException e) {
+            temp = null;
+        }
+        handler = temp;
         // Register your endpoints and exception handlers here.
 
     }
