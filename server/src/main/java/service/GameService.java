@@ -17,11 +17,11 @@ public class GameService {
         this.authService = new AuthService(authDAO);
     }
 
-    public void clear(){
+    public void clear() throws DataAccessException {
         gameDAO.clear();
     }
 
-    public CreateGameResult createGame(String authToken, String gameName) throws UnauthorizedException{
+    public CreateGameResult createGame(String authToken, String gameName) throws UnauthorizedException, DataAccessException {
         authService.validateAuth(authToken);
 
         GameData gameData = new GameData(nextID++, null, null, gameName, new ChessGame());
@@ -53,7 +53,7 @@ public class GameService {
         }
     }
 
-    public ListGamesResult listGames(String authToken) throws UnauthorizedException {
+    public ListGamesResult listGames(String authToken) throws UnauthorizedException, DataAccessException {
         authService.validateAuth(authToken);
 
         return new ListGamesResult(gameDAO.listGames());

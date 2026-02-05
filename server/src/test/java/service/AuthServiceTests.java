@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import model.AuthData;
 import org.junit.jupiter.api.Assertions;
@@ -16,7 +17,7 @@ public class AuthServiceTests {
     private AuthService authService;
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws DataAccessException {
         authDAO = new MemoryAuthDAO();
         authDAO.createAuth(new AuthData("token1", "test1"));
         authDAO.createAuth(new AuthData("token2", "test2"));
@@ -25,7 +26,7 @@ public class AuthServiceTests {
 
     @Test
     @DisplayName("Generate Auth Successfully")
-    public void generateAuth() {
+    public void generateAuth() throws DataAccessException {
         AuthData authData = authService.generateAuth("test3");
 
 
@@ -34,7 +35,7 @@ public class AuthServiceTests {
 
     @Test
     @DisplayName("Generate Existing Auth")
-    public void generateExistingAuth() {
+    public void generateExistingAuth() throws DataAccessException {
         AuthData existingAuth = authDAO.getAuth("token2");
         AuthData authData = authService.generateAuth("test2");
 
@@ -43,7 +44,7 @@ public class AuthServiceTests {
 
     @Test
     @DisplayName("Validate Existing Auth")
-    public void validateAuth() throws UnauthorizedException {
+    public void validateAuth() throws UnauthorizedException, DataAccessException {
         assertDoesNotThrow(() ->
             authService.validateAuth("token2")
         );
@@ -78,7 +79,7 @@ public class AuthServiceTests {
 
     @Test
     @DisplayName("Clear Auths")
-    public void clear() {
+    public void clear() throws DataAccessException {
         assertDoesNotThrow(() ->
             authService.clear()
         );

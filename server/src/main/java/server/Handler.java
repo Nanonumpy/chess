@@ -24,7 +24,7 @@ public class Handler {
         gson = new Gson();
     }
 
-    public String register(String body) throws JsonSyntaxException, AlreadyTakenException, InvalidRequest {
+    public String register(String body) throws JsonSyntaxException, AlreadyTakenException, InvalidRequest, DataAccessException {
         UserData userData = gson.fromJson(body, UserData.class);
         if(userData.username() == null || userData.password() == null || userData.email() == null){throw new InvalidRequest("Missing field");}
         LoginResult loginResult = userService.register(userData);
@@ -32,7 +32,7 @@ public class Handler {
         return gson.toJson(loginResult);
     }
 
-    public String login(String body) throws JsonSyntaxException, UnauthorizedException, InvalidRequest {
+    public String login(String body) throws JsonSyntaxException, UnauthorizedException, InvalidRequest, DataAccessException {
         LoginRequest loginRequest = gson.fromJson(body, LoginRequest.class);
         if(loginRequest.username() == null || loginRequest.password() == null){throw new InvalidRequest("Missing field");}
         LoginResult loginResult = userService.login(loginRequest);
@@ -40,17 +40,17 @@ public class Handler {
         return gson.toJson(loginResult);
     }
 
-    public void logout(String authToken) throws UnauthorizedException {
+    public void logout(String authToken) throws UnauthorizedException, DataAccessException {
         userService.logout(authToken);
     }
 
-    public String listGames(String authToken) throws UnauthorizedException {
+    public String listGames(String authToken) throws UnauthorizedException, DataAccessException {
         ListGamesResult gameList = gameService.listGames(authToken);
 
         return gson.toJson(gameList);
     }
 
-    public String createGame(String authToken, String body) throws UnauthorizedException, InvalidRequest {
+    public String createGame(String authToken, String body) throws UnauthorizedException, InvalidRequest, DataAccessException {
         String gameName = gson.fromJson(body, CreateGameRequest.class).gameName();
         if(gameName == null){throw new InvalidRequest("No game name provided");}
         CreateGameResult gameID = gameService.createGame(authToken, gameName);
@@ -64,7 +64,7 @@ public class Handler {
         gameService.joinGame(authToken, joinRequest);
     }
 
-    public void clear(){
+    public void clear() throws DataAccessException {
         userService.clear();
         authService.clear();
         gameService.clear();

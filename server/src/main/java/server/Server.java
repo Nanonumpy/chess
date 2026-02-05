@@ -44,30 +44,30 @@ public class Server {
         return javalin.port();
     }
 
-    private void register(Context ctx) throws JsonSyntaxException, AlreadyTakenException, InvalidRequest {
+    private void register(Context ctx) throws JsonSyntaxException, AlreadyTakenException, InvalidRequest, DataAccessException {
         String body = handler.register(ctx.body());
         ctx.status(200);
         ctx.json(body);
     }
 
-    private void login(Context ctx) throws JsonSyntaxException, UnauthorizedException, InvalidRequest {
+    private void login(Context ctx) throws JsonSyntaxException, UnauthorizedException, InvalidRequest, DataAccessException {
         String body = handler.login(ctx.body());
         ctx.status(200);
         ctx.json(body);
     }
 
-    private void logout(Context ctx) throws UnauthorizedException {
+    private void logout(Context ctx) throws UnauthorizedException, DataAccessException {
         handler.logout(ctx.header("Authorization"));
         ctx.status(200);
     }
 
-    private void listGames(Context ctx) throws UnauthorizedException {
+    private void listGames(Context ctx) throws UnauthorizedException, DataAccessException {
         String body = handler.listGames(ctx.header("Authorization"));
         ctx.status(200);
         ctx.json(body);
     }
 
-    private void createGame(Context ctx) throws UnauthorizedException, InvalidRequest {
+    private void createGame(Context ctx) throws UnauthorizedException, InvalidRequest, DataAccessException {
         String body = handler.createGame(ctx.header("Authorization"), ctx.body());
         ctx.status(200);
         ctx.json(body);
@@ -78,7 +78,7 @@ public class Server {
         ctx.status(200);
     }
 
-    private void clear(Context ctx) {
+    private void clear(Context ctx) throws DataAccessException {
         handler.clear();
         ctx.status(200);
     }

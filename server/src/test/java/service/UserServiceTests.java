@@ -15,7 +15,7 @@ public class UserServiceTests {
     private String auth;
 
     @BeforeEach
-    public void setup() throws AlreadyTakenException {
+    public void setup() throws AlreadyTakenException, DataAccessException {
         userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
         userService = new UserService(userDAO, authDAO);
@@ -24,7 +24,7 @@ public class UserServiceTests {
 
     @Test
     @DisplayName("Register User")
-    public void register() throws AlreadyTakenException {
+    public void register() throws AlreadyTakenException, DataAccessException {
         LoginResult loginResult = userService.register(new UserData("user2", "pass", "email"));
         assertEquals("user2", loginResult.username());
     }
@@ -39,7 +39,7 @@ public class UserServiceTests {
 
     @Test
     @DisplayName("Login user")
-    public void login() throws UnauthorizedException {
+    public void login() throws UnauthorizedException, DataAccessException {
         LoginResult loginResult = userService.login(new LoginRequest("user1", "pass"));
         assertEquals("user1", loginResult.username());
     }
@@ -78,7 +78,7 @@ public class UserServiceTests {
 
     @Test
     @DisplayName("Clear users")
-    public void clear() {
+    public void clear() throws DataAccessException {
         assertDoesNotThrow(() ->
                 userService.clear()
         );

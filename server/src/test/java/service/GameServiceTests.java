@@ -15,7 +15,7 @@ public class GameServiceTests {
     private GameService gameService;
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws DataAccessException {
         GameDAO gameDAO = new MemoryGameDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
         authDAO.createAuth(new AuthData("token1", "user1"));
@@ -29,7 +29,7 @@ public class GameServiceTests {
 
     @Test
     @DisplayName("Create Game")
-    public void createGame() throws UnauthorizedException {
+    public void createGame() throws UnauthorizedException, DataAccessException {
         int gameID = gameService.createGame("token1", "newGame").gameID();
 
         assertEquals(2, gameID);
@@ -68,7 +68,7 @@ public class GameServiceTests {
 
     @Test
     @DisplayName("List Games")
-    public void listGames() throws UnauthorizedException {
+    public void listGames() throws UnauthorizedException, DataAccessException {
         GameData[] games = gameService.listGames("token1").games();
 
         assertEquals(1, games.length);
@@ -84,7 +84,7 @@ public class GameServiceTests {
 
     @Test
     @DisplayName("Clear games")
-    public void clear() throws UnauthorizedException {
+    public void clear() throws UnauthorizedException, DataAccessException {
         assertDoesNotThrow(() ->
                 gameService.clear()
         );
