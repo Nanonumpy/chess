@@ -7,14 +7,14 @@ import server.ServerFacade;
 import service.LoginRequest;
 import service.LoginResult;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ServerFacadeTests {
 
     private static Server server;
     static ServerFacade facade;
+    static String authToken;
 
     @BeforeAll
     public static void init() {
@@ -27,7 +27,7 @@ public class ServerFacadeTests {
     @BeforeEach
     void clear() {
         facade.clear();
-        facade.register(new UserData("player1", "password", "p1@email.com"));
+        authToken = facade.register(new UserData("player1", "password", "p1@email.com")).authToken();
     }
 
     @Test
@@ -71,13 +71,17 @@ public class ServerFacadeTests {
     @Test
     @DisplayName("Logout")
     public void logout(){
-        assertTrue(true);
+        assertDoesNotThrow(() ->
+                facade.logout(authToken)
+        );
     }
 
     @Test
     @DisplayName("Logout Bad")
     public void logoutBad(){
-        assertTrue(true);
+        assertThrows(RuntimeException.class, () ->
+                facade.logout("bad token")
+        );
     }
 
     @Test
