@@ -24,7 +24,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    @DisplayName("RegisterBad")
+    @DisplayName("Register Bad")
     public void registerBad(){
         assertTrue(1==1);
     }
@@ -36,8 +36,56 @@ public class ServerFacadeTests {
     }
 
     @Test
-    @DisplayName("LoginBad")
+    @DisplayName("Login Bad")
     public void loginBad(){
+        assertTrue(1==1);
+    }
+
+    @Test
+    @DisplayName("Logout")
+    public void logout(){
+        assertTrue(1==1);
+    }
+
+    @Test
+    @DisplayName("Logout Bad")
+    public void logoutBad(){
+        assertTrue(1==1);
+    }
+
+    @Test
+    @DisplayName("Create Game")
+    public void createGame(){
+        assertTrue(1==1);
+    }
+
+    @Test
+    @DisplayName("Create Game Bad")
+    public void createGameBad(){
+        assertTrue(1==1);
+    }
+
+    @Test
+    @DisplayName("List Games")
+    public void listGames(){
+        assertTrue(1==1);
+    }
+
+    @Test
+    @DisplayName("List Games Bad")
+    public void listGamesBad(){
+        assertTrue(1==1);
+    }
+
+    @Test
+    @DisplayName("Play Game")
+    public void playGame(){
+        assertTrue(1==1);
+    }
+
+    @Test
+    @DisplayName("Play Game Bad")
+    public void playGameBad(){
         assertTrue(1==1);
     }
 
