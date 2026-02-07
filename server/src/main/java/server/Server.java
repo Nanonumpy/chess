@@ -30,7 +30,7 @@ public class Server {
     public int run(int desiredPort) {
         javalin.post("/user", this::register)
                 .post("/session", this::login)
-                .delete("session", this::logout)
+                .delete("/session", this::logout)
                 .get("/game", this::listGames)
                 .post("/game", this::createGame)
                 .put("/game", this::joinGame)
