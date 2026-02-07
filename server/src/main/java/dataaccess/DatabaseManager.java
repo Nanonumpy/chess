@@ -53,8 +53,7 @@ public class DatabaseManager {
                         case String p -> ps.setString(i + 1, p);
                         case Integer p -> ps.setInt(i + 1, p);
                         case null -> ps.setNull(i + 1, NULL);
-                        default -> {
-                        }
+                        default -> ps.setNull(i + 1, NULL);
                     }
                 }
                 ps.executeUpdate();
