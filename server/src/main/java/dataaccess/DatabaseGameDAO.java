@@ -16,7 +16,7 @@ public class DatabaseGameDAO implements GameDAO{
         String[] createStatements = {
                 """
             CREATE TABLE IF NOT EXISTS  game (
-              `id` int NOT NULL AUTO_INCREMENT,
+              `id` int NOT NULL,
               `name` varchar(256) NOT NULL,
               `whiteUsername` varchar(256),
               `blackUsername` varchar(256),
@@ -37,9 +37,9 @@ public class DatabaseGameDAO implements GameDAO{
 
     @Override
     public void createGame(GameData data) throws DataAccessException {
-        var statement = "INSERT INTO game (name, whiteUsername, blackUsername, game) VALUES (?, ?, ?, ?)";
+        var statement = "INSERT INTO game (id, name, whiteUsername, blackUsername, game) VALUES (?, ?, ?, ?, ?)";
         String json = new Gson().toJson(data.game());
-        DatabaseManager.executeUpdate(statement, data.gameName(), data.whiteUsername(), data.blackUsername(), json);
+        DatabaseManager.executeUpdate(statement, data.gameID(), data.gameName(), data.whiteUsername(), data.blackUsername(), json);
     }
 
     @Override

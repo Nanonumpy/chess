@@ -14,17 +14,15 @@ import java.util.Map;
 public class Server {
 
     private final Javalin javalin;
-    private final Handler handler;
+    private Handler handler;
 
     public Server(){
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        Handler temp;
         try {
-            temp = new Handler(new DatabaseAuthDAO(), new DatabaseGameDAO(), new DatabaseUserDAO());
+            handler = new Handler(new DatabaseAuthDAO(), new DatabaseGameDAO(), new DatabaseUserDAO());
         } catch (DataAccessException e) {
-            temp = null;
+            System.exit(1);
         }
-        handler = temp;
         // Register your endpoints and exception handlers here.
 
     }
@@ -105,8 +103,8 @@ public class Server {
     }
 
     private void dataAccess(Exception e, Context ctx) {
-        var body = new Gson().toJson(Map.of("message", "Error: not found"));
-        ctx.status(404);
+        var body = new Gson().toJson(Map.of("message", "Error: Data access internal error"));
+        ctx.status(500);
         ctx.json(body);
     }
 
