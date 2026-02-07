@@ -38,7 +38,8 @@ public class ServerFacade {
 
     public void logout(String header){
         HttpRequest request = buildRequest("DELETE", "/session", header, null);
-        sendRequest(request);
+        HttpResponse<String> response = sendRequest(request);
+        handleResponse(response, null);
     }
 
     public CreateGameResult createGame(String header, String data){
