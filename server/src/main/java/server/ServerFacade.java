@@ -1,4 +1,4 @@
-package Server;
+package server;
 
 import com.google.gson.Gson;
 import model.UserData;
@@ -19,13 +19,15 @@ public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
     private final String serverUrl;
 
-    public ServerFacade(String url) {
-        serverUrl = url;
+    public ServerFacade(String host, int port) {
+        serverUrl = "http://" + host + ":" + port;
     }
 
-    public void register(UserData data){
+    public LoginResult register(UserData data){
         HttpRequest request = buildRequest("POST", "/user", null, data);
-        sendRequest(request);
+        HttpResponse<String> response = sendRequest(request);
+        return handleResponse(response, LoginResult.class);
+
     }
 
     public LoginResult login(LoginRequest data){
@@ -53,6 +55,11 @@ public class ServerFacade {
 
     public void playGame(String header, String data){
         HttpRequest request = buildRequest("PUT", "/game", header, data);
+        sendRequest(request);
+    }
+
+    public void clear(){
+        HttpRequest request = buildRequest("DELETE", "/db", null, null);
         sendRequest(request);
     }
 

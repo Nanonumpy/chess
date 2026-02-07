@@ -1,44 +1,71 @@
 package client;
 
+import model.UserData;
 import org.junit.jupiter.api.*;
 import server.Server;
+import server.ServerFacade;
+import service.LoginRequest;
+import service.LoginResult;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class ServerFacadeTests {
 
     private static Server server;
+    static ServerFacade facade;
 
     @BeforeAll
     public static void init() {
         server = new Server();
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
+        facade = new ServerFacade("localhost", port);
+    }
+
+    @BeforeEach
+    void clear() {
+        facade.clear();
+        facade.register(new UserData("player1", "password", "p1@email.com"));
     }
 
     @Test
     @DisplayName("Register")
     public void register(){
-        assertTrue(true);
+        LoginResult res = facade.register(new UserData("player2", "password", "p1@email.com"));
+        assertTrue(res.authToken().length() > 10);
     }
 
     @Test
     @DisplayName("Register Bad")
     public void registerBad(){
-        assertTrue(true);
+        assertThrows(RuntimeException.class, () ->
+                facade.register(new UserData("player1", "password", null))
+        );
+
+        assertThrows(RuntimeException.class, () ->
+                facade.register(new UserData("player1", "password2", "p2@email.com"))
+        );
     }
 
     @Test
     @DisplayName("Login")
     public void login(){
-        assertTrue(true);
+        LoginResult res = facade.login(new LoginRequest("player1", "password"));
+        assertTrue(res.authToken().length() > 10);
     }
 
     @Test
     @DisplayName("Login Bad")
     public void loginBad(){
-        assertTrue(true);
+        assertThrows(RuntimeException.class, () ->
+                facade.login(new LoginRequest("player2", "password"))
+        );
+
+        assertThrows(RuntimeException.class, () ->
+                facade.login(new LoginRequest("player1", "wrong"))
+        );
     }
 
     @Test
