@@ -20,73 +20,73 @@ public class ServerFacadeTests {
     @Test
     @DisplayName("Register")
     public void register(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("Register Bad")
     public void registerBad(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("Login")
     public void login(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("Login Bad")
     public void loginBad(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("Logout")
     public void logout(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("Logout Bad")
     public void logoutBad(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("Create Game")
     public void createGame(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("Create Game Bad")
     public void createGameBad(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("List Games")
     public void listGames(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("List Games Bad")
     public void listGamesBad(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("Play Game")
     public void playGame(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @Test
     @DisplayName("Play Game Bad")
     public void playGameBad(){
-        assertTrue(1==1);
+        assertTrue(true);
     }
 
     @AfterAll
