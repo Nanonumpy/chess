@@ -1,11 +1,11 @@
 package client;
 
+import chess.ChessGame;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import server.Server;
 import server.ServerFacade;
-import service.LoginRequest;
-import service.LoginResult;
+import service.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,6 +28,7 @@ public class ServerFacadeTests {
     void clear() {
         facade.clear();
         authToken = facade.register(new UserData("player1", "password", "p1@email.com")).authToken();
+        facade.createGame(authToken, new CreateGameRequest("Game 1"));
     }
 
     @Test
@@ -87,37 +88,54 @@ public class ServerFacadeTests {
     @Test
     @DisplayName("Create Game")
     public void createGame(){
-        assertTrue(true);
+        CreateGameResult res = facade.createGame(authToken, new CreateGameRequest("Game 2"));
+        assertEquals(2,res.gameID()); // Revisit id generation
     }
 
     @Test
     @DisplayName("Create Game Bad")
     public void createGameBad(){
-        assertTrue(true);
+        assertThrows(RuntimeException.class, () ->
+                facade.createGame("bad token", new CreateGameRequest("Game 2"))
+        );
     }
 
     @Test
     @DisplayName("List Games")
     public void listGames(){
-        assertTrue(true);
+        ListGamesResult res = facade.listGames(authToken);
+        assertEquals(1, res.games().length);
     }
 
     @Test
     @DisplayName("List Games Bad")
     public void listGamesBad(){
-        assertTrue(true);
+        assertThrows(RuntimeException.class, () ->
+                facade.listGames("bad token")
+        );
     }
 
     @Test
     @DisplayName("Play Game")
     public void playGame(){
-        assertTrue(true);
+        assertDoesNotThrow(() ->
+            facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.WHITE, 1))
+        );
     }
 
     @Test
     @DisplayName("Play Game Bad")
     public void playGameBad(){
-        assertTrue(true);
+
+        assertThrows(RuntimeException.class, () ->
+                facade.playGame("Bad token", new JoinGameRequest(ChessGame.TeamColor.WHITE, 1))
+        );
+        facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.WHITE, 1));
+        assertThrows(RuntimeException.class, () ->
+                facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.WHITE, 1))
+        );
+
+
     }
 
     @AfterAll

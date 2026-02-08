@@ -2,10 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import model.UserData;
-import service.CreateGameResult;
-import service.ListGamesResult;
-import service.LoginRequest;
-import service.LoginResult;
+import service.*;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -36,32 +33,34 @@ public class ServerFacade {
         return handleResponse(response, LoginResult.class);
     }
 
-    public void logout(String header){
-        HttpRequest request = buildRequest("DELETE", "/session", header, null);
+    public void logout(String authToken){
+        HttpRequest request = buildRequest("DELETE", "/session", authToken, null);
         HttpResponse<String> response = sendRequest(request);
         handleResponse(response, null);
     }
 
-    public CreateGameResult createGame(String header, String data){
-        HttpRequest request = buildRequest("POST", "/game", header, data);
+    public CreateGameResult createGame(String authToken, CreateGameRequest gameName){
+        HttpRequest request = buildRequest("POST", "/game", authToken, gameName);
         HttpResponse<String> response = sendRequest(request);
         return handleResponse(response, CreateGameResult.class);
     }
 
-    public ListGamesResult listGames(String data){
-        HttpRequest request = buildRequest("GET", "/game", null, data);
+    public ListGamesResult listGames(String authToken){
+        HttpRequest request = buildRequest("GET", "/game", authToken, null);
         HttpResponse<String> response = sendRequest(request);
         return handleResponse(response, ListGamesResult.class);
     }
 
-    public void playGame(String header, String data){
-        HttpRequest request = buildRequest("PUT", "/game", header, data);
-        sendRequest(request);
+    public void playGame(String authToken, JoinGameRequest data){
+        HttpRequest request = buildRequest("PUT", "/game", authToken, data);
+        HttpResponse<String> response = sendRequest(request);
+        handleResponse(response, null);
     }
 
     public void clear(){
         HttpRequest request = buildRequest("DELETE", "/db", null, null);
-        sendRequest(request);
+        HttpResponse<String> response = sendRequest(request);
+        handleResponse(response, null);
     }
 
     private HttpRequest buildRequest(String method, String path, String header, Object body) {

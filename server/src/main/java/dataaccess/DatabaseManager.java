@@ -44,9 +44,9 @@ public class DatabaseManager {
         }
     }
 
-    static public void executeUpdate(String statement, Object... params) throws DataAccessException {
+    static public int executeUpdate(String statement, Object... params) throws DataAccessException {
         try (Connection conn = getConnection()) {
-            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+            try (PreparedStatement ps = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
                 for (int i = 0; i < params.length; i++) {
                     Object param = params[i];
                     switch (param) {
@@ -57,6 +57,13 @@ public class DatabaseManager {
                     }
                 }
                 ps.executeUpdate();
+
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+
+                return 0;
             }
         } catch (DataAccessException | SQLException e) {
             throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));

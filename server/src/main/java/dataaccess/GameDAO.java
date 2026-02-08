@@ -6,7 +6,7 @@ public interface GameDAO {
 
     void clear() throws DataAccessException;
 
-    void createGame(GameData data) throws DataAccessException;
+    int createGame(String gameName) throws DataAccessException;
 
     GameData getGame(int gameID) throws DataAccessException;
 

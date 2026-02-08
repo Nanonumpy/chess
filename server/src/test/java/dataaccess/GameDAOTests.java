@@ -20,16 +20,16 @@ public class GameDAOTests {
     public void setup() throws DataAccessException {
         gameDAO = new DatabaseGameDAO();
         gameDAO.clear();
-        gameDAO.createGame(new GameData(1, null, null, "TestGame", new ChessGame()));
+        gameDAO.createGame("TestGame");
     }
 
     @Test
     @DisplayName("Create Game")
     public void createGame() throws DataAccessException {
-        gameDAO.createGame(new GameData(2, null, null, "NewGame", new ChessGame()));
+        int gameID = gameDAO.createGame("NewGame");
 
 
-        assertEquals(2, gameDAO.getGame(2).gameID());
+        assertEquals(2, gameID);
     }
 
     @Test

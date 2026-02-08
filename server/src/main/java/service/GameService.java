@@ -10,7 +10,6 @@ import model.GameData;
 public class GameService {
     private final GameDAO gameDAO;
     private final AuthService authService;
-    private int nextID = 1;
 
     public GameService(GameDAO gameDAO, AuthDAO authDAO){
         this.gameDAO = gameDAO;
@@ -24,10 +23,9 @@ public class GameService {
     public CreateGameResult createGame(String authToken, String gameName) throws UnauthorizedException, DataAccessException {
         authService.validateAuth(authToken);
 
-        GameData gameData = new GameData(nextID++, null, null, gameName, new ChessGame());
-        gameDAO.createGame(gameData);
+        int gameID = gameDAO.createGame(gameName);
 
-        return new CreateGameResult(gameData.gameID());
+        return new CreateGameResult(gameID);
     }
 
     public void joinGame(String authToken, JoinGameRequest joinRequest) throws UnauthorizedException, DataAccessException, AlreadyTakenException {
