@@ -3,7 +3,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>client</artifactId>
-    <version>1.0.0</version>
 
     <parent>
         <artifactId>chess</artifactId>
@@ -21,7 +20,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.1</version>
                 <configuration>
-                    <mainClass>client.ClientMain</mainClass>
+                    <mainClass>ClientMain</mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -38,7 +37,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        client.ClientMain
+                                        ClientMain
                                     </mainClass>
                                 </manifest>
                             </archive>
@@ -59,21 +58,9 @@
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>edu.byu.cs240</groupId>
-            <artifactId>server</artifactId>
-            <scope>test</scope>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.tyrus.bundles</groupId>
             <artifactId>tyrus-standalone-client</artifactId>
             <version>2.1.4</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.byu.cs240</groupId>
-            <artifactId>server</artifactId>
-            <version>1.0.0</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

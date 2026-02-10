@@ -1,8 +1,6 @@
 package client;
 
 import model.UserData;
-import service.LoginRequest;
-import service.LoginResult;
 
 import java.util.Scanner;
 

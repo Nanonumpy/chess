@@ -2,9 +2,6 @@ package client;
 
 import chess.ChessGame;
 import model.GameData;
-import service.CreateGameRequest;
-import service.JoinGameRequest;
-import service.LoginResult;
 
 import java.util.Scanner;
 

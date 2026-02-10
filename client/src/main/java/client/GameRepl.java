@@ -5,7 +5,6 @@ import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import model.GameData;
-import service.JoinGameRequest;
 import ui.EscapeSequences;
 
 import java.util.HashMap;
