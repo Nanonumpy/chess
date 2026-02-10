@@ -33,11 +33,12 @@ public class PostRepl {
         String input = scanner.nextLine().toLowerCase();
         switch(input){
             case "help":
-                System.out.println("  Register - create an account");
-                System.out.println("  Login - login and play chess");
-                System.out.println("  Quit - exit chess client");
-                System.out.println("  Help - list available commands");
-
+                System.out.println("  Logout - Logout and return to previous menu");
+                System.out.println("  Create - Create a chess game");
+                System.out.println("  List - Get a list of existing chess games");
+                System.out.println("  Play - Join an existing chess game");
+                System.out.println("  Observe - Observe an existing chess game");
+                System.out.println("  Help - List available commands");
                 break;
 
             case "logout":

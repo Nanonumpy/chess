@@ -27,16 +27,17 @@ public class ClientMain {
         while(true){
             if(postRepl.getLoginResult() == null){
                 postRepl.setLoginResult(preRepl.loop());
-                gameRepl.setAuthToken(postRepl.getLoginResult().authToken());
             }
 
             else if (gameRepl.getJoinGameRequest() == null){
+                gameRepl.setAuthToken(postRepl.getLoginResult().authToken());
                 gameRepl.setJoinGameRequest(postRepl.loop());
             }
 
             else{
                 gameRepl.loop();
             }
+            System.out.println();
         }
     }
 
