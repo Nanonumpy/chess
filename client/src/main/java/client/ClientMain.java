@@ -1,18 +1,10 @@
 package client;
 
 import chess.*;
-import model.GameData;
-import model.UserData;
+
 import server.Server;
 import server.ServerFacade;
-import service.CreateGameRequest;
-import service.JoinGameRequest;
-import service.LoginRequest;
-import ui.EscapeSequences;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
 
 import static ui.EscapeSequences.WHITE_QUEEN;
 
@@ -21,263 +13,33 @@ public class ClientMain {
         Server server = new Server();
         int port = server.run(0);
         ServerFacade facade = new ServerFacade("localhost", port);
+
+        PreRepl preRepl = new PreRepl(facade);
+        PostRepl postRepl = new PostRepl(facade);
+        GameRepl gameRepl = new GameRepl(facade);
+
         System.out.println(WHITE_QUEEN + " 240 Chess Client:");
         System.out.println("Type Help to get started.\n");
-        Scanner scanner = new Scanner(System.in);
-        String authToken = null;
-        String username = null;
-        GameData curGame = null;
-        Map<Integer, GameData> games = new HashMap<>();
+
         facade.clear();
 
-        // repl
+        //noinspection InfiniteLoopStatement
         while(true){
-            if(authToken == null){
-                System.out.print("[LOGGED OUT] >>> ");
-                String input = scanner.nextLine().toLowerCase();
-                switch(input){
-                    case "help":
-                        System.out.println("  Register - create an account");
-                        System.out.println("  Login - login and play chess");
-                        System.out.println("  Quit - exit chess client");
-                        System.out.println("  Help - list available commands");
+            if(postRepl.getLoginResult() == null){
+                postRepl.setLoginResult(preRepl.loop());
+                gameRepl.setAuthToken(postRepl.getLoginResult().authToken());
+            }
 
-                        break;
-
-                    case "quit":
-                        System.exit(0);
-                        break;
-
-                    case "login":
-                        System.out.print("Enter Username: ");
-                        username = scanner.nextLine();
-                        System.out.print("Enter Password: ");
-                        String password = scanner.nextLine();
-
-                        try{
-                            authToken = facade.login(new LoginRequest(username, password)).authToken();
-                        }
-                        catch(RuntimeException e){
-                            System.out.print("Internal server error or invalid credentials");
-                        }
-                        break;
-
-                    case "register":
-                        System.out.print("Enter Username: ");
-                        username = scanner.nextLine();
-                        System.out.print("Enter Password: ");
-                        password = scanner.nextLine();
-                        System.out.print("Enter Email: ");
-                        String email = scanner.nextLine();
-
-                        try{
-                            authToken = facade.register(new UserData(username, password, email)).authToken();
-                        }
-                        catch(RuntimeException e){
-                            System.out.print("Internal server error or username taken");
-                        }
-                        break;
-
-                    default:
-                        System.out.println("Invalid command!\n");
-
-                }
+            else if (gameRepl.getJoinGameRequest() == null){
+                gameRepl.setJoinGameRequest(postRepl.loop());
             }
 
             else{
-                System.out.print("[" + username + "] >>> ");
-                String input = scanner.nextLine().toLowerCase();
-                switch(input){
-                    case "help":
-                        System.out.println("  Register - create an account");
-                        System.out.println("  Login - login and play chess");
-                        System.out.println("  Quit - exit chess client");
-                        System.out.println("  Help - list available commands");
-
-                        break;
-
-                    case "logout":
-                        try {
-                            facade.logout(authToken);
-                            authToken = null;
-                        }
-                        catch(RuntimeException e){
-                            System.out.print("Internal server error");
-                        }
-                        break;
-
-                    case "create":
-                        System.out.print("Enter Game Name: ");
-                        String gameName = scanner.nextLine();
-
-
-                        try{
-                            int gameID = facade.createGame(authToken, new CreateGameRequest(gameName)).gameID();
-                            System.out.println("Your game ID is " + gameID);                        }
-                        catch(RuntimeException e){
-                            System.out.print("Internal server error");
-                        }
-                        break;
-
-                    case "list":
-                        try{
-                            GameData[] gamesList = facade.listGames(authToken).games();
-                            for(GameData game : gamesList) {
-                                System.out.println(game.gameID() + ": " + game.gameName());
-                            }
-                        }
-                        catch(RuntimeException e){
-                            System.out.print("Internal server error");
-                        }
-                        break;
-
-                    case "play":
-                        System.out.print("Enter Team Color (WHITE/BLACK): ");
-                        String color = scanner.nextLine();
-                        System.out.print("Enter Game id: ");
-                        String id = scanner.nextLine();
-
-                        try{
-                            facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.valueOf(color), Integer.parseInt(id)));
-                            if(games.isEmpty()) {
-                                GameData[] gamesList = facade.listGames(authToken).games();
-                                for (GameData game : gamesList) {
-                                    games.put(game.gameID(), game);
-                                }
-                            }
-                            curGame = games.get(Integer.parseInt(id));
-                            System.out.println("Playing Game " + curGame.gameName());
-                            displayBoard(curGame.game().getBoard(), ChessGame.TeamColor.valueOf(color));
-                        }
-                        catch(RuntimeException e){
-                            System.out.print("Bad input or Internal server error");
-                        }
-                        break;
-
-                    case "observe":
-                        System.out.print("Enter Game id: ");
-                        id = scanner.nextLine();
-                        try{
-                            if(games.isEmpty()) {
-                                GameData[] gamesList = facade.listGames(authToken).games();
-                                for (GameData game : gamesList) {
-                                    games.put(game.gameID(), game);
-                                }
-                            }
-                            curGame = games.get(Integer.parseInt(id));
-                            System.out.println("Observing Game " + curGame.gameName());
-                            displayBoard(curGame.game().getBoard(), ChessGame.TeamColor.WHITE);
-                        }
-                        catch(RuntimeException e){
-                            System.out.print("Internal server error");
-                        }
-                        break;
-
-                    default:
-                        System.out.println("Invalid command!\n");
-
-                }
+                gameRepl.loop();
             }
-
         }
     }
 
-    public static void displayBoard(ChessBoard board, ChessGame.TeamColor color){
-        StringBuilder out = new StringBuilder();
-        if(color == ChessGame.TeamColor.WHITE){
-            StringBuilder letters = new StringBuilder();
-            letters.append(EscapeSequences.SET_BG_COLOR_DARK_GREY).append(EscapeSequences.EMPTY);
-            for (int i = 0; i < 8; i++){
-                letters.append(" ").append((char)(97+i)).append(" ");
-            }
-            letters.append(EscapeSequences.EMPTY);
-            letters.append(EscapeSequences.RESET_BG_COLOR + "\n");
-            out.append(letters);
 
-            for (int r = 8; r > 0; r--){
-                out.append(EscapeSequences.SET_BG_COLOR_DARK_GREY).append(" ").append(r).append(" ");
-                for (int c = 1; c <= 8; c++){
-                    ChessPiece piece = board.getPiece(new ChessPosition(r, c));
-                    String background = ((r+c)%2==1)
-                            ? EscapeSequences.SET_BG_COLOR_LIGHT_GREY : EscapeSequences.SET_BG_COLOR_BLACK;
-                    if(piece == null){
-                        out.append(background).append(EscapeSequences.EMPTY);
-                    }
-                    else{
-                        String chr = background + switch (piece.getPieceType()) {
-                            case ChessPiece.PieceType.BISHOP -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_BISHOP : EscapeSequences.BLACK_BISHOP;
-                            case ChessPiece.PieceType.KING -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_KING : EscapeSequences.BLACK_KING;
-                            case ChessPiece.PieceType.KNIGHT -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_KNIGHT : EscapeSequences.BLACK_KNIGHT;
-                            case ChessPiece.PieceType.PAWN -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_PAWN : EscapeSequences.BLACK_PAWN;
-                            case ChessPiece.PieceType.QUEEN -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_QUEEN : EscapeSequences.BLACK_QUEEN;
-                            case ChessPiece.PieceType.ROOK -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_ROOK : EscapeSequences.BLACK_ROOK;
-                        };
-
-                        out.append(chr);
-                    }
-                }
-                out.append(EscapeSequences.SET_BG_COLOR_DARK_GREY).append(" ").append(r).append(" ");
-                out.append(EscapeSequences.RESET_BG_COLOR + "\n");
-            }
-            out.append(letters);
-        }
-
-        else if(color == ChessGame.TeamColor.BLACK){
-            StringBuilder letters = new StringBuilder();
-            letters.append(EscapeSequences.SET_BG_COLOR_DARK_GREY).append(EscapeSequences.EMPTY);
-            for (int i = 7; i >= 0; i--){
-                letters.append(" ").append((char)(97+i)).append(" ");
-            }
-            letters.append(EscapeSequences.EMPTY);
-            letters.append(EscapeSequences.RESET_BG_COLOR + "\n");
-            out.append(letters);
-
-            for (int r = 1; r <= 8; r++){
-                out.append(EscapeSequences.SET_BG_COLOR_DARK_GREY).append(" ").append(r).append(" ");
-                for (int c = 8; c > 0; c--){
-                    ChessPiece piece = board.getPiece(new ChessPosition(r, c));
-                    String background = ((r+c)%2==1)
-                            ? EscapeSequences.SET_BG_COLOR_LIGHT_GREY : EscapeSequences.SET_BG_COLOR_BLACK;
-                    if(piece == null){
-                        out.append(background).append(EscapeSequences.EMPTY);
-                    }
-                    else{
-                        String chr = background + switch (piece.getPieceType()) {
-                            case ChessPiece.PieceType.BISHOP -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_BISHOP : EscapeSequences.BLACK_BISHOP;
-                            case ChessPiece.PieceType.KING -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_KING : EscapeSequences.BLACK_KING;
-                            case ChessPiece.PieceType.KNIGHT -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_KNIGHT : EscapeSequences.BLACK_KNIGHT;
-                            case ChessPiece.PieceType.PAWN -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_PAWN : EscapeSequences.BLACK_PAWN;
-                            case ChessPiece.PieceType.QUEEN -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_QUEEN : EscapeSequences.BLACK_QUEEN;
-                            case ChessPiece.PieceType.ROOK -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                    ? EscapeSequences.WHITE_ROOK : EscapeSequences.BLACK_ROOK;
-                        };
-
-                        out.append(chr);
-                    }
-                }
-                out.append(EscapeSequences.SET_BG_COLOR_DARK_GREY).append(" ").append(r).append(" ");
-                out.append(EscapeSequences.RESET_BG_COLOR + "\n");
-            }
-            out.append(letters);
-        }
-
-
-        else{
-            throw new RuntimeException("Invalid color!");
-        }
-
-        System.out.print(out.toString());
-    }
 }
 
