@@ -2,7 +2,6 @@ package client;
 
 import com.google.gson.Gson;
 import model.UserData;
-import service.*;
 
 import java.net.URI;
 import java.net.http.HttpClient;

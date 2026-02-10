@@ -2,14 +2,11 @@ import client.GameRepl;
 import client.PostRepl;
 import client.PreRepl;
 import client.ServerFacade;
-import server.Server;
 import ui.EscapeSequences;
 
 public class ClientMain {
     public static void main(String[] args) {
-        Server server = new Server();
-        int port = server.run(0);
-        ServerFacade facade = new ServerFacade("localhost", port);
+        ServerFacade facade = new ServerFacade("localhost", 0);
 
         PreRepl preRepl = new PreRepl(facade);
         PostRepl postRepl = new PostRepl(facade);
@@ -17,8 +14,6 @@ public class ClientMain {
 
         System.out.println(EscapeSequences.WHITE_QUEEN + " 240 Chess Client:");
         System.out.println("Type Help to get started.\n");
-
-        facade.clear();
 
         //noinspection InfiniteLoopStatement
         while(true){
