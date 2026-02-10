@@ -1,7 +1,6 @@
 package client;
 
 import model.UserData;
-import server.ServerFacade;
 import service.LoginRequest;
 import service.LoginResult;
 

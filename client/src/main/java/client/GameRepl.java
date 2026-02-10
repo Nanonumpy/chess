@@ -5,7 +5,6 @@ import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import model.GameData;
-import server.ServerFacade;
 import service.JoinGameRequest;
 import ui.EscapeSequences;
 

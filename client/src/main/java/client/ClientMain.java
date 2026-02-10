@@ -1,12 +1,7 @@
 package client;
 
-import chess.*;
-
 import server.Server;
-import server.ServerFacade;
-
-
-import static ui.EscapeSequences.WHITE_QUEEN;
+import ui.EscapeSequences;
 
 public class ClientMain {
     public static void main(String[] args) {
@@ -18,7 +13,7 @@ public class ClientMain {
         PostRepl postRepl = new PostRepl(facade);
         GameRepl gameRepl = new GameRepl(facade);
 
-        System.out.println(WHITE_QUEEN + " 240 Chess Client:");
+        System.out.println(EscapeSequences.WHITE_QUEEN + " 240 Chess Client:");
         System.out.println("Type Help to get started.\n");
 
         facade.clear();
