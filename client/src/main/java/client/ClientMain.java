@@ -9,6 +9,8 @@ import service.CreateGameRequest;
 import service.JoinGameRequest;
 import service.LoginRequest;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.WHITE_QUEEN;
@@ -23,6 +25,8 @@ public class ClientMain {
         Scanner scanner = new Scanner(System.in);
         String authToken = null;
         String username = null;
+        GameData curGame = null;
+        Map<Integer, GameData> games = new HashMap<>();
         facade.clear();
 
         // repl
@@ -79,7 +83,7 @@ public class ClientMain {
                 }
             }
 
-            else {
+            else{
                 System.out.print("[" + username + "] >>> ");
                 String input = scanner.nextLine().toLowerCase();
                 switch(input){
@@ -116,8 +120,8 @@ public class ClientMain {
 
                     case "list":
                         try{
-                            GameData[] games = facade.listGames(authToken).games();
-                            for(GameData game : games) {
+                            GameData[] gamesList = facade.listGames(authToken).games();
+                            for(GameData game : gamesList) {
                                 System.out.println(game.gameID() + ": " + game.gameName());
                             }
                         }
@@ -133,17 +137,35 @@ public class ClientMain {
                         String id = scanner.nextLine();
 
                         try{
-                            //facade.playGame(authToken, new JoinGameRequest((ChessGame.TeamColor)color, (int)gameID));
+                            facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.valueOf(color), Integer.parseInt(id)));
+                            if(games.isEmpty()) {
+                                GameData[] gamesList = facade.listGames(authToken).games();
+                                for (GameData game : gamesList) {
+                                    games.put(game.gameID(), game);
+                                }
+                            }
+                            curGame = games.get(Integer.parseInt(id));
+                            System.out.println("Playing Game " + curGame.gameName());
+                            displayBoard(curGame.game());
                         }
                         catch(RuntimeException e){
-                            System.out.print("Internal server error");
+                            System.out.print("Bad input or Internal server error");
                         }
                         break;
 
                     case "observe":
-
+                        System.out.print("Enter Game id: ");
+                        id = scanner.nextLine();
                         try{
-
+                            if(games.isEmpty()) {
+                                GameData[] gamesList = facade.listGames(authToken).games();
+                                for (GameData game : gamesList) {
+                                    games.put(game.gameID(), game);
+                                }
+                            }
+                            curGame = games.get(Integer.parseInt(id));
+                            System.out.println("Observing Game " + curGame.gameName());
+                            displayBoard(curGame.game());
                         }
                         catch(RuntimeException e){
                             System.out.print("Internal server error");
@@ -156,7 +178,7 @@ public class ClientMain {
                 }
             }
 
-            }
         }
     }
+}
 
