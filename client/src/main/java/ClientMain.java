@@ -6,7 +6,7 @@ import ui.EscapeSequences;
 
 public class ClientMain {
     public static void main(String[] args) {
-        ServerFacade facade = new ServerFacade("localhost", 0);
+        ServerFacade facade = new ServerFacade("localhost", 8080);
 
         PreRepl preRepl = new PreRepl(facade);
         PostRepl postRepl = new PostRepl(facade);

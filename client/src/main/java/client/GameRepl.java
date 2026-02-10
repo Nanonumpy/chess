@@ -9,13 +9,16 @@ import ui.EscapeSequences;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 public class GameRepl {
 
     private final ServerFacade facade;
     private JoinGameRequest joinGameRequest;
     private String authToken;
+    private final Scanner scanner = new Scanner(System.in);
     private final Map<Integer, GameData> games = new HashMap<>();
+    private GameData gameData;
 
 
     public GameRepl(ServerFacade facade){
@@ -26,6 +29,10 @@ public class GameRepl {
         return joinGameRequest;
     }
 
+    public GameData getGameData(){
+        return gameData;
+    }
+
     public void setJoinGameRequest(JoinGameRequest joinGameRequest) {
         this.joinGameRequest = joinGameRequest;
     }
@@ -34,20 +41,81 @@ public class GameRepl {
         this.authToken = authToken;
     }
 
+    public void setGameData(GameData gameData) {
+        this.gameData = gameData;
+    }
+
     public void loop(){
-        if(games.isEmpty()) {
+
+        if(getGameData() == null){redraw();}
+
+        System.out.print("[" + getGameData().gameName() + "] >>> ");
+        String input = scanner.nextLine().toLowerCase();
+
+        switch (input) {
+            case "help":
+                help();
+                break;
+
+            case "redraw":
+                redraw();
+                break;
+
+            case "leave":
+                setGameData(null);
+                setJoinGameRequest(null);
+                break;
+
+            case "move":
+                makeMove();
+                break;
+
+            case "resign":
+                resign();
+                break;
+
+            case "highlight":
+                highlightMoves();
+                break;
+
+            default:
+                System.out.println("Invalid command!\n");
+
+        }
+    }
+
+    public void help(){
+        System.out.println("  Redraw - redraw current chess board");
+        System.out.println("  Leave - leave the current game");
+        System.out.println("  Move - make a chess move");
+        System.out.println("  Resign - resign from the current game");
+        System.out.println("  Highlight - select a piece to highlight its legal moves");
+        System.out.println("  Help - list available commands");
+    }
+
+    public void redraw(){
+        if (games.isEmpty()) {
             GameData[] gamesList = facade.listGames(authToken).games();
             for (GameData game : gamesList) {
                 games.put(game.gameID(), game);
             }
         }
-        GameData curGame = games.get(getJoinGameRequest().gameID());
-        System.out.println("Game: " + curGame.gameName());
-        displayBoard(curGame.game().getBoard(), getJoinGameRequest().playerColor());
-
-        setJoinGameRequest(null);
+        setGameData(games.get(getJoinGameRequest().gameID()));
+        System.out.println("Game: " + getGameData().gameName());
+        displayBoard(getGameData().game().getBoard(), getJoinGameRequest().playerColor());
     }
 
+    public void makeMove(){
+        System.out.println("Make move");
+    }
+
+    public void resign(){
+        System.out.println("Resign");
+    }
+
+    public void highlightMoves(){
+        System.out.println("Highlight");
+    }
 
     public void displayBoard(ChessBoard board, ChessGame.TeamColor color){
         StringBuilder out = new StringBuilder();
@@ -122,6 +190,6 @@ public class GameRepl {
             out.append(EscapeSequences.RESET_BG_COLOR + "\n");
         }
         out.append(letters);
-        System.out.print(out);
+        System.out.println(out);
     }
 }
