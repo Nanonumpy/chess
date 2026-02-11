@@ -1,12 +1,10 @@
-import client.GameRepl;
-import client.PostRepl;
-import client.PreRepl;
-import client.ServerFacade;
+import client.*;
 import ui.EscapeSequences;
+import websocket.messages.ServerMessage;
 
-public class ClientMain {
-    public static void main(String[] args) {
-        ServerFacade facade = new ServerFacade("localhost", 8080);
+public class ClientMain implements ServerMessageObserver {
+    public static void main(String[] args){
+        ServerFacade facade = new ServerFacade("localhost", 8080, this);
 
         PreRepl preRepl = new PreRepl(facade);
         PostRepl postRepl = new PostRepl(facade);
@@ -34,5 +32,9 @@ public class ClientMain {
     }
 
 
+    @Override
+    public void notify(ServerMessage message) {
+        System.out.println("ERROR");
+    }
 }
 

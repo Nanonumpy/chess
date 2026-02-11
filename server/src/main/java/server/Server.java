@@ -35,7 +35,14 @@ public class Server {
                 .post("/game", this::createGame)
                 .put("/game", this::joinGame)
                 .delete("/db", this::clear)
-                .exception(JsonSyntaxException.class, this::badRequest)
+                .ws("/ws", ws -> {
+                    ws.onConnect(ctx -> {
+                        ctx.enableAutomaticPings();
+                        System.out.println("Websocket connected");
+                    });
+                    ws.onMessage(ctx -> ctx.send("WebSocket response:" + ctx.message()));
+                    ws.onClose(ctx -> System.out.println("Websocket closed"));
+                })
                 .exception(InvalidRequest.class, this::badRequest)
                 .exception(UnauthorizedException.class, this::unauthorized)
                 .exception(AlreadyTakenException.class, this::alreadyTaken)
