@@ -1,9 +1,6 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import model.GameData;
 import ui.EscapeSequences;
 
@@ -62,8 +59,7 @@ public class GameRepl {
                 break;
 
             case "leave":
-                setGameData(null);
-                setJoinGameRequest(null);
+                leave();
                 break;
 
             case "move":
@@ -105,12 +101,19 @@ public class GameRepl {
         displayBoard(getGameData().game().getBoard(), getJoinGameRequest().playerColor());
     }
 
+    public void leave(){
+        setGameData(null);
+        setJoinGameRequest(null);
+        facade.leave(authToken, gameData.gameID());
+    }
+
     public void makeMove(){
-        System.out.println("Make move");
+        ChessMove move = new ChessMove(null, null, null);
+        facade.makeMove(authToken, gameData.gameID(), move);
     }
 
     public void resign(){
-        System.out.println("Resign");
+        facade.resign(authToken, joinGameRequest.gameID());
     }
 
     public void highlightMoves(){
