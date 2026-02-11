@@ -74,7 +74,7 @@ public class PostRepl {
 
             case "play":
                 System.out.print("Enter Team Color (WHITE/BLACK): ");
-                String color = scanner.nextLine();
+                String color = scanner.nextLine().toUpperCase();
                 System.out.print("Enter Game id: ");
                 id = scanner.nextLine();
 

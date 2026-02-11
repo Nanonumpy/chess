@@ -126,9 +126,36 @@ public class GameRepl {
             System.out.println("Invalid command!\n");
             return;
         }
-        if(getCanMove()) {
-            ChessMove move = new ChessMove(null, null, null);
+        if(!getCanMove()) {
+            return;
+        }
+
+        try {
+            System.out.print("Input piece position (e.g. a4): ");
+            String spos = scanner.nextLine().toLowerCase();
+            ChessPosition startPosition = validatePos(spos);
+
+            ChessPiece piece = getGameData().game().getBoard().getPiece(startPosition);
+            if(piece == null || piece.getTeamColor() != getJoinGameRequest().playerColor()){
+                throw new RuntimeException("Invalid piece selected");
+            }
+
+            System.out.print("Input move end position (e.g. e2): ");
+            String epos = scanner.nextLine().toLowerCase();
+            ChessPosition endPosition = validatePos(epos);
+
+            ChessPiece.PieceType promotionPiece = null;
+            if(piece.getPieceType() == ChessPiece.PieceType.PAWN
+                    && (endPosition.getRow() == 1 || endPosition.getColumn() == 8)){
+                System.out.print("Enter pawn promotion piece (knight, bishop, rook, or queen): ");
+                promotionPiece = ChessPiece.PieceType.valueOf(scanner.nextLine().toUpperCase());
+            }
+
+            ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
             facade.makeMove(authToken, gameData.gameID(), move);
+        }
+        catch (RuntimeException e){
+            System.out.println("Invalid Move: " + e.getMessage());
         }
     }
 
@@ -160,7 +187,7 @@ public class GameRepl {
             redraw(highlightPosition);
         }
         catch (RuntimeException e){
-            System.out.println("Invalid Position!\n");
+            System.out.println("Invalid Position: " + e.getMessage());
         }
 
 
@@ -168,12 +195,12 @@ public class GameRepl {
 
     public ChessPosition validatePos(String pos){
         if(pos.length() != 2){
-            throw new RuntimeException("Invalid move");
+            throw new RuntimeException("Invalid position format");
         }
         int r = pos.charAt(1)-'0';
         int c = (int)pos.charAt(0)-96;
         if(r < 1 || r > 8 || c < 0 || c > 8){
-            throw new RuntimeException("Invalid move");
+            throw new RuntimeException("Position out of bounds");
         }
 
         return new ChessPosition(r, c);
