@@ -14,10 +14,12 @@ import java.util.Map;
 public class Server {
 
     private final Javalin javalin;
+    private final WebsocketRequestHandler wsHandler;
     private Handler handler;
 
     public Server(){
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        wsHandler = new WebsocketRequestHandler();
         try {
             handler = new Handler(new DatabaseAuthDAO(), new DatabaseGameDAO(), new DatabaseUserDAO());
         } catch (DataAccessException e) {
@@ -36,12 +38,9 @@ public class Server {
                 .put("/game", this::joinGame)
                 .delete("/db", this::clear)
                 .ws("/ws", ws -> {
-                    ws.onConnect(ctx -> {
-                        ctx.enableAutomaticPings();
-                        System.out.println("Websocket connected");
-                    });
-                    ws.onMessage(ctx -> ctx.send("WebSocket response:" + ctx.message()));
-                    ws.onClose(ctx -> System.out.println("Websocket closed"));
+                    ws.onConnect(wsHandler);
+                    ws.onMessage(wsHandler);
+                    ws.onClose(wsHandler);
                 })
                 .exception(InvalidRequest.class, this::badRequest)
                 .exception(UnauthorizedException.class, this::unauthorized)
