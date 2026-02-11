@@ -79,11 +79,13 @@ public class PostRepl {
                 id = scanner.nextLine();
 
                 try{
-                    joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.valueOf(color), Integer.parseInt(id));
+                    joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.valueOf(color), Integer.parseInt(id), false);
                     facade.playGame(loginResult.authToken(), joinGameRequest);
+                    facade.connect(getLoginResult().authToken(), joinGameRequest.gameID());
                 }
                 catch(RuntimeException e){
                     System.out.print("Bad input or Internal server error");
+                    joinGameRequest = null;
                 }
                 break;
 
@@ -91,10 +93,12 @@ public class PostRepl {
                 System.out.print("Enter Game id: ");
                 id = scanner.nextLine();
                 try{
-                    joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, Integer.parseInt(id));
+                    joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, Integer.parseInt(id), true);
+                    facade.connect(getLoginResult().authToken(), joinGameRequest.gameID());
                 }
                 catch(RuntimeException e){
                     System.out.print("Internal server error");
+                    joinGameRequest = null;
                 }
                 break;
 

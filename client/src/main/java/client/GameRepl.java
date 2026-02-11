@@ -4,9 +4,7 @@ import chess.*;
 import model.GameData;
 import ui.EscapeSequences;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class GameRepl {
 
@@ -16,6 +14,7 @@ public class GameRepl {
     private final Scanner scanner = new Scanner(System.in);
     private final Map<Integer, GameData> games = new HashMap<>();
     private GameData gameData;
+    private boolean canMove;
 
 
     public GameRepl(ServerFacade facade){
@@ -30,6 +29,10 @@ public class GameRepl {
         return gameData;
     }
 
+    public boolean getCanMove(){
+        return canMove;
+    }
+
     public void setJoinGameRequest(JoinGameRequest joinGameRequest) {
         this.joinGameRequest = joinGameRequest;
     }
@@ -42,9 +45,13 @@ public class GameRepl {
         this.gameData = gameData;
     }
 
+    public void setCanMove(boolean canMove){
+        this.canMove = canMove;
+    }
+
     public void loop(){
 
-        if(getGameData() == null){redraw();}
+        if(getGameData() == null){redraw(null);}
 
         System.out.print("[" + getGameData().gameName() + "] >>> ");
         String input = scanner.nextLine().toLowerCase();
@@ -55,7 +62,7 @@ public class GameRepl {
                 break;
 
             case "redraw":
-                redraw();
+                redraw(null);
                 break;
 
             case "leave":
@@ -81,15 +88,22 @@ public class GameRepl {
     }
 
     public void help(){
-        System.out.println("  Redraw - redraw current chess board");
-        System.out.println("  Leave - leave the current game");
-        System.out.println("  Move - make a chess move");
-        System.out.println("  Resign - resign from the current game");
-        System.out.println("  Highlight - select a piece to highlight its legal moves");
-        System.out.println("  Help - list available commands");
+        if(getJoinGameRequest().observe()){
+            System.out.println("  Redraw - redraw current chess board");
+            System.out.println("  Leave - leave the current game");
+            System.out.println("  Help - list available commands");
+        }
+        else {
+            System.out.println("  Redraw - redraw current chess board");
+            System.out.println("  Leave - leave the current game");
+            System.out.println("  Move - make a chess move");
+            System.out.println("  Resign - resign from the current game");
+            System.out.println("  Highlight - select a piece to highlight its legal moves");
+            System.out.println("  Help - list available commands");
+        }
     }
 
-    public void redraw(){
+    public void redraw(ChessPosition highlightPosition){
         if (games.isEmpty()) {
             GameData[] gamesList = facade.listGames(authToken).games();
             for (GameData game : gamesList) {
@@ -97,30 +111,84 @@ public class GameRepl {
             }
         }
         setGameData(games.get(getJoinGameRequest().gameID()));
-        System.out.println("Game: " + getGameData().gameName());
-        displayBoard(getGameData().game().getBoard(), getJoinGameRequest().playerColor());
+        displayBoard(getGameData().game().getBoard(), getJoinGameRequest().playerColor(), highlightPosition);
     }
 
     public void leave(){
+        facade.leave(authToken, gameData.gameID());
         setGameData(null);
         setJoinGameRequest(null);
-        facade.leave(authToken, gameData.gameID());
+        setCanMove(true);
     }
 
     public void makeMove(){
-        ChessMove move = new ChessMove(null, null, null);
-        facade.makeMove(authToken, gameData.gameID(), move);
+        if(getJoinGameRequest().observe()){
+            System.out.println("Invalid command!\n");
+            return;
+        }
+        if(getCanMove()) {
+            ChessMove move = new ChessMove(null, null, null);
+            facade.makeMove(authToken, gameData.gameID(), move);
+        }
     }
 
     public void resign(){
+        if(getJoinGameRequest().observe()){
+            System.out.println("Invalid command!\n");
+            return;
+        }
         facade.resign(authToken, joinGameRequest.gameID());
+        setCanMove(false);
     }
 
     public void highlightMoves(){
-        System.out.println("Highlight");
+        if(getJoinGameRequest().observe()){
+            System.out.println("Invalid command!\n");
+            return;
+        }
+
+        try{
+            System.out.print("Input piece position (e.g. a4): ");
+            String pos = scanner.nextLine().toLowerCase();
+            ChessPosition highlightPosition = validatePos(pos);
+            ChessPiece highlightPiece = getGameData().game().getBoard().getPiece(highlightPosition);
+            if(highlightPiece == null || highlightPiece.getTeamColor() != getJoinGameRequest().playerColor()){
+                System.out.println("No valid piece at selected position!\n");
+                return;
+            }
+
+            redraw(highlightPosition);
+        }
+        catch (RuntimeException e){
+            System.out.println("Invalid Position!\n");
+        }
+
+
     }
 
-    public void displayBoard(ChessBoard board, ChessGame.TeamColor color){
+    public ChessPosition validatePos(String pos){
+        if(pos.length() != 2){
+            throw new RuntimeException("Invalid move");
+        }
+        int r = pos.charAt(1)-'0';
+        int c = (int)pos.charAt(0)-96;
+        if(r < 1 || r > 8 || c < 0 || c > 8){
+            throw new RuntimeException("Invalid move");
+        }
+
+        return new ChessPosition(r, c);
+
+
+    }
+
+    public void displayBoard(ChessBoard board, ChessGame.TeamColor color, ChessPosition highlightPosition){
+        List<ChessPosition> highlightPositions = new ArrayList<>();
+        if(highlightPosition != null){
+            for(ChessMove move : getGameData().game().validMoves(highlightPosition)){
+                highlightPositions.add(move.getEndPosition());
+            }
+        }
+
         StringBuilder out = new StringBuilder();
         StringBuilder letters;
         int startR;
@@ -164,9 +232,23 @@ public class GameRepl {
         for (int r = startR; r != endR; r+=incR){
             out.append(EscapeSequences.SET_BG_COLOR_DARK_GREY).append(" ").append(r).append(" ");
             for (int c = startC; c != endC; c+=incC){
+
                 ChessPiece piece = board.getPiece(new ChessPosition(r, c));
-                String background = ((r+c)%2==1)
-                        ? EscapeSequences.SET_BG_COLOR_LIGHT_GREY : EscapeSequences.SET_BG_COLOR_BLACK;
+                String background;
+                ChessPosition curPosition = new ChessPosition(r, c);
+
+                if(curPosition.equals(highlightPosition)){
+                    background = EscapeSequences.SET_BG_COLOR_YELLOW;
+                }
+                else if(highlightPositions.contains(curPosition)){
+                    background = ((r+c)%2==1)
+                            ? EscapeSequences.SET_BG_COLOR_GREEN : EscapeSequences.SET_BG_COLOR_DARK_GREEN;
+                }
+                else{
+                    background = ((r+c)%2==1)
+                            ? EscapeSequences.SET_BG_COLOR_LIGHT_GREY : EscapeSequences.SET_BG_COLOR_BLACK;
+                }
+
                 if(piece == null){
                     out.append(background).append(EscapeSequences.EMPTY);
                 }
