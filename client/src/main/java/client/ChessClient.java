@@ -35,6 +35,6 @@ public class ChessClient implements ServerMessageObserver {
 
     @Override
     public void notify(ServerMessage message) {
-        System.out.println("ERROR");
+        System.out.println(message.getServerMessageType());
     }
 }
