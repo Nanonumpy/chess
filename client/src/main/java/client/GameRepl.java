@@ -13,7 +13,6 @@ public class GameRepl {
     private String authToken;
     private final Scanner scanner = new Scanner(System.in);
     private GameData gameData;
-    private boolean canMove = true;
 
     public GameRepl(ServerFacade facade){
         this.facade = facade;
@@ -27,10 +26,6 @@ public class GameRepl {
         return gameData;
     }
 
-    public boolean getCanMove(){
-        return canMove;
-    }
-
     public void setJoinGameRequest(JoinGameRequest joinGameRequest) {
         this.joinGameRequest = joinGameRequest;
     }
@@ -41,10 +36,6 @@ public class GameRepl {
 
     public void setGameData(GameData gameData) {
         this.gameData = gameData;
-    }
-
-    public void setCanMove(boolean canMove){
-        this.canMove = canMove;
     }
 
     public void printLoop() {
@@ -112,15 +103,11 @@ public class GameRepl {
         facade.leave(authToken, gameData.gameID());
         setGameData(null);
         setJoinGameRequest(null);
-        setCanMove(true);
     }
 
     public void makeMove(){
         if(getJoinGameRequest().observe()){
             System.out.println("Invalid command!\n");
-            return;
-        }
-        if(!getCanMove()) {
             return;
         }
 
@@ -159,7 +146,6 @@ public class GameRepl {
             return;
         }
         facade.resign(authToken, joinGameRequest.gameID());
-        setCanMove(false);
     }
 
     public void highlightMoves(){

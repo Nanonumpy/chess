@@ -86,13 +86,13 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
 
         String message;
         if(username.equals(gameData.whiteUsername())) {
-            message = username + "joined the game as white.";
+            message = username + " has joined the game as white.";
         }
         else if(username.equals(gameData.blackUsername())) {
-            message = username + "joined the game as black.";
+            message = username + " has joined the game as black.";
         }
         else{
-            message = username + "joined the game as an observer.";
+            message = username + " has joined the game as an observer.";
         }
         clients.get(gameID).broadcast(root.session,
                 new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message));
@@ -118,7 +118,6 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
             throw new InvalidMoveException("Not your turn!");
         }
 
-
         // update game
         gameData.game().makeMove(move);
         gameDAO.updateGame(gameData);
@@ -137,17 +136,20 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
         // send Notification to all clients if check, checkmate, or stalemate occurs
         if(game.isInCheckmate(game.getTeamTurn())){
             clients.get(gameID).broadcast(null,
-                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Checkmate"));
+                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                            "Checkmate! "
+                                    + (username.equals(gameData.whiteUsername()) ? "White" : "Black")
+                                    + " wins!"));
 
         }
         else if(game.isInStalemate(game.getTeamTurn())){
             clients.get(gameID).broadcast(null,
-                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate"));
+                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate!"));
 
         }
         else if(game.isInCheck(game.getTeamTurn())){
             clients.get(gameID).broadcast(null,
-                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Check"));
+                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Check!"));
         }
     }
 
