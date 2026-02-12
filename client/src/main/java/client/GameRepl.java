@@ -43,7 +43,6 @@ public class GameRepl {
     }
 
     public void loop(){
-        if(getGameData() == null) {return;}
         printLoop();
         String input = scanner.nextLine().toLowerCase();
 

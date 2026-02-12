@@ -32,7 +32,7 @@ public class ChessClient implements ServerMessageObserver {
                 gameRepl.setJoinGameRequest(postRepl.loop());
             }
 
-            else{
+            else if (gameRepl.getGameData() != null){
                 gameRepl.loop();
             }
         }
