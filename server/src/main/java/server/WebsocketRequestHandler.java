@@ -130,7 +130,7 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
                 new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData));
 
         // send Notification to other clients informing that a move was made
-        String message = game.getBoard().getPiece(move.getEndPosition()).getPieceType().toString() + move;
+        String message = game.getBoard().getPiece(move.getEndPosition()).getPieceType().toString() +  " " + move;
         clients.get(gameID).broadcast(root.session,
                 new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message));
 
