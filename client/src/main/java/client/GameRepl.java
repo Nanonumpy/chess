@@ -12,10 +12,8 @@ public class GameRepl {
     private JoinGameRequest joinGameRequest;
     private String authToken;
     private final Scanner scanner = new Scanner(System.in);
-    private final Map<Integer, GameData> games = new HashMap<>();
     private GameData gameData;
-    private boolean canMove;
-
+    private boolean canMove = true;
 
     public GameRepl(ServerFacade facade){
         this.facade = facade;
@@ -49,11 +47,13 @@ public class GameRepl {
         this.canMove = canMove;
     }
 
-    public void loop(){
-
-        if(getGameData() == null){redraw(null);}
-
+    public void printLoop() {
         System.out.print("[" + getGameData().gameName() + "] >>> ");
+    }
+
+    public void loop(){
+        if(getGameData() == null) return;
+        printLoop();
         String input = scanner.nextLine().toLowerCase();
 
         switch (input) {
@@ -91,6 +91,7 @@ public class GameRepl {
         if(getJoinGameRequest().observe()){
             System.out.println("  Redraw - redraw current chess board");
             System.out.println("  Leave - leave the current game");
+            System.out.println("  Highlight - select a piece to highlight its legal moves");
             System.out.println("  Help - list available commands");
         }
         else {
@@ -104,13 +105,6 @@ public class GameRepl {
     }
 
     public void redraw(ChessPosition highlightPosition){
-        if (games.isEmpty()) {
-            GameData[] gamesList = facade.listGames(authToken).games();
-            for (GameData game : gamesList) {
-                games.put(game.gameID(), game);
-            }
-        }
-        setGameData(games.get(getJoinGameRequest().gameID()));
         displayBoard(getGameData().game().getBoard(), getJoinGameRequest().playerColor(), highlightPosition);
     }
 
@@ -146,7 +140,7 @@ public class GameRepl {
 
             ChessPiece.PieceType promotionPiece = null;
             if(piece.getPieceType() == ChessPiece.PieceType.PAWN
-                    && (endPosition.getRow() == 1 || endPosition.getColumn() == 8)){
+                    && (endPosition.getRow() == 1 || endPosition.getRow() == 8)){
                 System.out.print("Enter pawn promotion piece (knight, bishop, rook, or queen): ");
                 promotionPiece = ChessPiece.PieceType.valueOf(scanner.nextLine().toUpperCase());
             }
@@ -169,17 +163,12 @@ public class GameRepl {
     }
 
     public void highlightMoves(){
-        if(getJoinGameRequest().observe()){
-            System.out.println("Invalid command!\n");
-            return;
-        }
-
         try{
             System.out.print("Input piece position (e.g. a4): ");
             String pos = scanner.nextLine().toLowerCase();
             ChessPosition highlightPosition = validatePos(pos);
             ChessPiece highlightPiece = getGameData().game().getBoard().getPiece(highlightPosition);
-            if(highlightPiece == null || highlightPiece.getTeamColor() != getJoinGameRequest().playerColor()){
+            if(highlightPiece == null){
                 System.out.println("No valid piece at selected position!\n");
                 return;
             }
@@ -217,6 +206,7 @@ public class GameRepl {
         }
 
         StringBuilder out = new StringBuilder();
+        out.append("\n");
         StringBuilder letters;
         int startR;
         int endR;

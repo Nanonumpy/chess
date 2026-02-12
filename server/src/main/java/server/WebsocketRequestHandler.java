@@ -71,20 +71,36 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
     public void connect(WsMessageContext root) throws IOException, UnauthorizedException, DataAccessException {
         UserGameCommand command = new Gson().fromJson(root.message(), UserGameCommand.class);
         Integer gameID = command.getGameID();
+        GameData gameData = getGameData(command.getAuthToken(), gameID);
+        String username = getUsername(command.getAuthToken());
 
         // Send LOAD_GAME to root
         root.session.getRemote().sendString(gson.toJson(new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,
-                getGameData(command.getAuthToken(), gameID).game())));
+                gameData)));
 
         // Send Notification to all other clients saying someone joined as a player (with color) or observer
         if(!clients.containsKey(gameID)){
             clients.put(gameID, new ConnectionManager());
         }
         clients.get(gameID).add(root.session);
-        clients.get(gameID).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has joined"));
+
+        String message;
+        if(username.equals(gameData.whiteUsername())) {
+            message = username + "joined the game as white.";
+        }
+        else if(username.equals(gameData.blackUsername())) {
+            message = username + "joined the game as black.";
+        }
+        else{
+            message = username + "joined the game as an observer.";
+        }
+        clients.get(gameID).broadcast(root.session,
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message));
+
     }
 
-    public void makeMove(WsMessageContext root) throws IOException, UnauthorizedException, DataAccessException, InvalidMoveException {
+    public void makeMove(WsMessageContext root) throws
+            IOException, UnauthorizedException, DataAccessException, InvalidMoveException {
         MakeMoveCommand command = new Gson().fromJson(root.message(), MakeMoveCommand.class);
         Integer gameID = command.getGameID();
         ChessMove move = command.getMove();
@@ -110,23 +126,28 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
         ChessGame game = gameData.game();
 
         // send LOAD_GAME to all clients
-        clients.get(gameID).broadcast(null, new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game));
+        clients.get(gameID).broadcast(null,
+                new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData));
 
         // send Notification to other clients informing that a move was made
         String message = game.getBoard().getPiece(move.getEndPosition()).getPieceType().toString() + move;
-        clients.get(gameID).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message));
+        clients.get(gameID).broadcast(root.session,
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message));
 
         // send Notification to all clients if check, checkmate, or stalemate occurs
         if(game.isInCheckmate(game.getTeamTurn())){
-            clients.get(gameID).broadcast(null, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Checkmate"));
+            clients.get(gameID).broadcast(null,
+                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Checkmate"));
 
         }
         else if(game.isInStalemate(game.getTeamTurn())){
-            clients.get(gameID).broadcast(null, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate"));
+            clients.get(gameID).broadcast(null,
+                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate"));
 
         }
         else if(game.isInCheck(game.getTeamTurn())){
-            clients.get(gameID).broadcast(null, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Check"));
+            clients.get(gameID).broadcast(null,
+                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Check"));
         }
     }
 
@@ -147,7 +168,9 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
         }
 
         // Send Notification to other clients
-        clients.get(gameID).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has left"));
+        clients.get(gameID).broadcast(root.session,
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        username + " has left the game."));
 
         clients.get(gameID).remove(root.session);
     }
@@ -171,7 +194,9 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
         gameDAO.updateGame(gameData);
 
         // Send Notification to all clients
-        clients.get(gameID).broadcast(null, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has resigned"));
+        clients.get(gameID).broadcast(null,
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        username + " has resigned."));
 
     }
 

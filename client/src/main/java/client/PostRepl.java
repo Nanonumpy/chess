@@ -22,10 +22,14 @@ public class PostRepl {
         this.loginResult = loginResult;
     }
 
+    public void printLoop(){
+        System.out.print("[" + loginResult.username() + "] >>> ");
+    }
+
     public JoinGameRequest loop(){
         JoinGameRequest joinGameRequest = null;
         String id;
-        System.out.print("[" + loginResult.username() + "] >>> ");
+        printLoop();
         String input = scanner.nextLine().toLowerCase();
         switch(input){
             case "help":

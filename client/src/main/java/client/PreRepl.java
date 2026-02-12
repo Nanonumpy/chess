@@ -12,9 +12,13 @@ public class PreRepl {
         this.facade = facade;
     }
 
+    public void printLoop(){
+        System.out.print("[LOGGED OUT] >>> ");
+    }
+
     public LoginResult loop() {
         LoginResult loginResult = null;
-        System.out.print("[LOGGED OUT] >>> ");
+        printLoop();
         String input = scanner.nextLine().toLowerCase();
         switch (input) {
             case "help":

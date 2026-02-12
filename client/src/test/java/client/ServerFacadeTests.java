@@ -118,7 +118,7 @@ public class ServerFacadeTests {
     @DisplayName("Play Game")
     public void playGame(){
         assertDoesNotThrow(() ->
-            facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.WHITE, 1))
+            facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.WHITE, 1, false))
         );
     }
 
@@ -127,11 +127,11 @@ public class ServerFacadeTests {
     public void playGameBad(){
 
         assertThrows(RuntimeException.class, () ->
-                facade.playGame("Bad token", new JoinGameRequest(ChessGame.TeamColor.WHITE, 1))
+                facade.playGame("Bad token", new JoinGameRequest(ChessGame.TeamColor.WHITE, 1, false))
         );
-        facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.WHITE, 1));
+        facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.WHITE, 1, false));
         assertThrows(RuntimeException.class, () ->
-                facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.WHITE, 1))
+                facade.playGame(authToken, new JoinGameRequest(ChessGame.TeamColor.WHITE, 1, false))
         );
 
 

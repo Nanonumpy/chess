@@ -2,9 +2,14 @@ package client;
 
 import chess.ChessMove;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import jakarta.websocket.*;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -14,6 +19,7 @@ import java.net.URISyntaxException;
 public class WebsocketCommunicator extends Endpoint {
     Session session;
     ServerMessageObserver notificationHandler;
+    private final Gson gson = new Gson();
 
     public WebsocketCommunicator(String url, ServerMessageObserver notificationHandler) {
         try {
@@ -25,12 +31,23 @@ public class WebsocketCommunicator extends Endpoint {
             this.session = container.connectToServer(this, socketURI);
 
             //set message handler
-            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @Override
-                public void onMessage(String message) {
-                    ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(notification);
+            this.session.addMessageHandler((MessageHandler.Whole<String>) message -> {
+                JsonObject obj = JsonParser.parseString(message).getAsJsonObject();
+                String type = obj.get("serverMessageType").getAsString();
+
+                ServerMessage notification;
+
+                switch (type) {
+                    case "LOAD_GAME" ->
+                            notification = gson.fromJson(message, LoadGameMessage.class);
+                    case "NOTIFICATION" ->
+                            notification = gson.fromJson(message, NotificationMessage.class);
+                    case "ERROR" ->
+                            notification = gson.fromJson(message, ErrorMessage.class);
+                    default ->
+                            throw new IllegalStateException("Unknown message type");
                 }
+                notificationHandler.notify(notification);
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
             throw new RuntimeException(ex.getMessage());
