@@ -15,6 +15,7 @@ public class ChessGame {
 
     private TeamColor teamTurn;
     private ChessBoard board;
+    private boolean gameOver = false;
 
     public ChessGame() {
         setTeamTurn(TeamColor.WHITE);
@@ -30,6 +31,11 @@ public class ChessGame {
         return teamTurn;
     }
 
+    public boolean getGameOver() {
+        return gameOver;
+    }
+
+
     /**
      * Set's which teams turn it is
      *
@@ -38,6 +44,8 @@ public class ChessGame {
     public void setTeamTurn(TeamColor team) {
         teamTurn = team;
     }
+
+    public void setGameOver(boolean gameOver){this.gameOver = gameOver;}
 
     /**
      * Enum identifying the 2 possible teams in a chess game
@@ -95,6 +103,9 @@ public class ChessGame {
         ChessBoard board = getBoard();
         ChessPiece piece = board.getPiece(move.getStartPosition());
 
+        if(getGameOver()){
+            throw new InvalidMoveException("Game is over!");
+        }
         if(piece == null){
             throw new InvalidMoveException("No piece at selected square!");
         }

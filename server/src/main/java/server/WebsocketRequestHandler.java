@@ -92,15 +92,16 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
         String username = getUsername(command.getAuthToken());
 
         // validate move
-        if(gameData.game().getTeamTurn() == ChessGame.TeamColor.WHITE && !gameData.whiteUsername().equals(username)){
+        if(gameData.game().getGameOver()){
+            throw new InvalidMoveException("Game is over!");
+        }
+        else if(gameData.game().getTeamTurn() == ChessGame.TeamColor.WHITE && !gameData.whiteUsername().equals(username)){
             throw new InvalidMoveException("Not your turn!");
         }
         else if(gameData.game().getTeamTurn() == ChessGame.TeamColor.BLACK && !gameData.blackUsername().equals(username)){
             throw new InvalidMoveException("Not your turn!");
         }
-        else if(gameData.game().getTeamTurn() == null){
-            throw new InvalidMoveException("Game is over!");
-        }
+
 
         // update game
         gameData.game().makeMove(move);
@@ -157,15 +158,16 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
         GameData gameData = getGameData(command.getAuthToken(), gameID);
         String username = getUsername(command.getAuthToken());
 
+        if(gameData.game().getGameOver()){
+            throw new InvalidMoveException("Game is already over!");
+        }
         if(!username.equals(gameData.whiteUsername()) && !username.equals(gameData.blackUsername())){
             throw new InvalidMoveException("Observer cannot resign");
         }
-        if(gameData.game().getTeamTurn() == null){
-            throw new InvalidMoveException("Game is already over!");
-        }
+
 
         // Update game
-        gameData.game().setTeamTurn(null);
+        gameData.game().setGameOver(true);
         gameDAO.updateGame(gameData);
 
         // Send Notification to all clients
