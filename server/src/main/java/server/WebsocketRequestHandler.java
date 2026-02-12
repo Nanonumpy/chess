@@ -1,9 +1,15 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
+import dataaccess.*;
 import io.javalin.websocket.*;
+import model.GameData;
 import org.jetbrains.annotations.NotNull;
+import service.GameService;
+import service.UnauthorizedException;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
@@ -13,6 +19,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConcurrentHashMap<Integer, ConnectionManager> clients = new ConcurrentHashMap<>();
+    private final Gson gson = new Gson();
+    private final GameDAO gameDAO = new DatabaseGameDAO();
+    private final AuthDAO authDAO = new DatabaseAuthDAO();
+
+    private final GameService gameService = new GameService(gameDAO, authDAO);
+
+    public WebsocketRequestHandler() throws DataAccessException {
+    }
 
     @Override
     public void handleConnect(@NotNull WsConnectContext ctx) {
@@ -32,7 +46,7 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
                 case UserGameCommand.CommandType.RESIGN -> resign(ctx);
                 default -> throw new IllegalStateException("Unexpected value: " + command.getCommandType());
             }
-        } catch (IOException e){
+        } catch (Exception e){
             e.printStackTrace();
         }
 
@@ -43,23 +57,27 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
         System.out.println("Websocket closed");
     }
 
-    public void connect(WsMessageContext root) throws IOException {
+    public void connect(WsMessageContext root) throws IOException, UnauthorizedException, DataAccessException {
+        UserGameCommand command = new Gson().fromJson(root.message(), UserGameCommand.class);
+        Integer gameID = command.getGameID();
+
         // Send LOAD_GAME to root
+        root.session.getRemote().sendString(gson.toJson(new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,
+                getGame(command.getAuthToken(), gameID))));
 
         // Send Notification to all other clients saying someone joined as a player (with color) or observer
-        UserGameCommand command = new Gson().fromJson(root.message(), UserGameCommand.class);
-        Integer gameId = command.getGameID();
 
-        if(!clients.containsKey(gameId)){
-            clients.put(gameId, new ConnectionManager());
+
+        if(!clients.containsKey(gameID)){
+            clients.put(gameID, new ConnectionManager());
         }
-        clients.get(gameId).add(root.session);
-        clients.get(gameId).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has joined"));
+        clients.get(gameID).add(root.session);
+        clients.get(gameID).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has joined"));
     }
 
     public void makeMove(WsMessageContext root) throws IOException {
         UserGameCommand command = new Gson().fromJson(root.message(), UserGameCommand.class);
-        Integer gameId = command.getGameID();
+        Integer gameID = command.getGameID();
 
         // validate move
 
@@ -68,33 +86,42 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
         // send LOAD_GAME to all clients
 
         // send Notification to other clients informing that a move was made
-        clients.get(gameId).add(root.session);
-        clients.get(gameId).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has moved"));
+        clients.get(gameID).add(root.session);
+        clients.get(gameID).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has moved"));
 
         // send Notification to all clients if check, checkmate, or stalemate occurs
     }
 
     public void leave(WsMessageContext root) throws IOException {
         UserGameCommand command = new Gson().fromJson(root.message(), UserGameCommand.class);
-        Integer gameId = command.getGameID();
+        Integer gameID = command.getGameID();
 
         // Update game
 
         // Send Notification to other clients
-        clients.get(gameId).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has left"));
+        clients.get(gameID).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has left"));
 
-        clients.get(gameId).remove(root.session);
+        clients.get(gameID).remove(root.session);
     }
 
     public void resign(WsMessageContext root) throws IOException {
         UserGameCommand command = new Gson().fromJson(root.message(), UserGameCommand.class);
-        Integer gameId = command.getGameID();
+        Integer gameID = command.getGameID();
         // Update game
 
         // Send Notification to all clients
-        clients.get(gameId).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has resigned"));
+        clients.get(gameID).broadcast(root.session, new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player has resigned"));
 
-        clients.get(gameId).remove(root.session);
+        clients.get(gameID).remove(root.session);
+    }
+
+    public ChessGame getGame(String authToken, int gameID) throws UnauthorizedException, DataAccessException {
+        for(GameData gameData: gameService.listGames(authToken).games()){
+            if(gameData.gameID() == gameID){
+                return gameData.game();
+            }
+        }
+        throw new DataAccessException("Joining nonexistent game");
     }
 
 }

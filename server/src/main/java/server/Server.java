@@ -14,13 +14,13 @@ import java.util.Map;
 public class Server {
 
     private final Javalin javalin;
-    private final WebsocketRequestHandler wsHandler;
+    private WebsocketRequestHandler wsHandler;
     private Handler handler;
 
     public Server(){
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        wsHandler = new WebsocketRequestHandler();
         try {
+            wsHandler = new WebsocketRequestHandler();
             handler = new Handler(new DatabaseAuthDAO(), new DatabaseGameDAO(), new DatabaseUserDAO());
         } catch (DataAccessException e) {
             System.exit(1);
