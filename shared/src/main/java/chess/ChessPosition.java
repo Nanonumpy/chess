@@ -35,9 +35,7 @@ public class ChessPosition {
     }
 
     @Override
-    public String toString() {
-        return String.format("(%d, %d)", row, col);
-    }
+    public String toString() {return (char)(col+96) + Integer.toString(row);}
 
     @Override
     public boolean equals(Object o) {
