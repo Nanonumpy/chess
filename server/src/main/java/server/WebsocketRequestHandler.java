@@ -2,6 +2,7 @@ package server;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
@@ -118,6 +119,8 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
             throw new InvalidMoveException("Not your turn!");
         }
 
+        ChessPiece.PieceType originalPieceType = gameData.game().getBoard().getPiece(move.getStartPosition()).getPieceType();
+
         // update game
         gameData.game().makeMove(move);
         gameDAO.updateGame(gameData);
@@ -129,27 +132,37 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
                 new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData));
 
         // send Notification to other clients informing that a move was made
-        String message = game.getBoard().getPiece(move.getEndPosition()).getPieceType().toString() +  " " + move;
+        String message;
+        if(move.getPromotionPiece() == null) {
+            message = username + " " + game.getBoard().getPiece(move.getEndPosition()).getPieceType().toString().toLowerCase()
+                    + " " + move;
+        }
+        else{
+            message = username + " " + originalPieceType.toString().toLowerCase()
+                    + " " + move + "->" + game.getBoard().getPiece(move.getEndPosition()).getPieceType().toString().toLowerCase();
+        }
         clients.get(gameID).broadcast(root.session,
                 new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message));
 
         // send Notification to all clients if check, checkmate, or stalemate occurs
+        String oppUsername = (game.getTeamTurn() == ChessGame.TeamColor.WHITE
+                ? gameData.whiteUsername() : gameData.blackUsername());
         if(game.isInCheckmate(game.getTeamTurn())){
             clients.get(gameID).broadcast(null,
                     new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                            "Checkmate! "
-                                    + (username.equals(gameData.whiteUsername()) ? "White" : "Black")
+                                    oppUsername
+                            + " is in checkmate. "
+                                    + username
                                     + " wins!"));
-
         }
         else if(game.isInStalemate(game.getTeamTurn())){
             clients.get(gameID).broadcast(null,
                     new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate!"));
-
         }
         else if(game.isInCheck(game.getTeamTurn())){
             clients.get(gameID).broadcast(null,
-                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Check!"));
+                    new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                            oppUsername + " is in check."));
         }
     }
 

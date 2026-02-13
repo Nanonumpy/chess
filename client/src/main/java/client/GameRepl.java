@@ -11,11 +11,12 @@ public class GameRepl {
     private final ServerFacade facade;
     private JoinGameRequest joinGameRequest;
     private String authToken;
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner;
     private GameData gameData;
 
-    public GameRepl(ServerFacade facade){
+    public GameRepl(ServerFacade facade, Scanner scanner){
         this.facade = facade;
+        this.scanner = scanner;
     }
 
     public JoinGameRequest getJoinGameRequest() {
@@ -39,7 +40,18 @@ public class GameRepl {
     }
 
     public void printLoop() {
-        System.out.print("[" + getGameData().gameName() + "] >>> ");
+        if(!getJoinGameRequest().observe()){
+            String msg = "\n"+ (
+                    (gameData.game().getTeamTurn() == getJoinGameRequest().playerColor())
+                            ? "Your Turn"
+                            : "Opponent's Turn");
+            System.out.print(msg + " [" + getGameData().gameName() + ": "
+                    + getJoinGameRequest().playerColor().toString().toLowerCase() + "] >>> ");
+        }
+        else{
+            System.out.print("\n[" + getGameData().gameName() + ": observer] >>> ");
+        }
+
     }
 
     public void loop(){
@@ -144,7 +156,19 @@ public class GameRepl {
             System.out.println("Invalid command!\n");
             return;
         }
-        facade.resign(authToken, joinGameRequest.gameID());
+        try{
+            System.out.print("Are you sure? (Y/n): ");
+            String ans = scanner.nextLine();
+
+            if(ans.equals("Y")){
+                facade.resign(authToken, joinGameRequest.gameID());
+            }
+
+        }
+        catch (RuntimeException e){
+            System.out.println("Invalid Argument!");
+        }
+
     }
 
     public void highlightMoves(){
@@ -275,6 +299,6 @@ public class GameRepl {
             out.append(EscapeSequences.RESET_BG_COLOR + "\n");
         }
         out.append(letters);
-        System.out.println(out);
+        System.out.print(out);
     }
 }

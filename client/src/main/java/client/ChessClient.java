@@ -6,17 +6,21 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
+import java.util.Scanner;
+
 public class ChessClient implements ServerMessageObserver {
     PreRepl preRepl;
     PostRepl postRepl;
     GameRepl gameRepl;
+    private final Scanner scanner = new Scanner(System.in);
+
 
     public void run(){
         ServerFacade facade = new ServerFacade("localhost", 8080, this);
 
-        preRepl = new PreRepl(facade);
-        postRepl = new PostRepl(facade);
-        gameRepl = new GameRepl(facade);
+        preRepl = new PreRepl(facade, scanner);
+        postRepl = new PostRepl(facade, scanner);
+        gameRepl = new GameRepl(facade, scanner);
 
         System.out.println(EscapeSequences.WHITE_QUEEN + " 240 Chess Client:");
         System.out.println("Type Help to get started.\n");
@@ -35,12 +39,17 @@ public class ChessClient implements ServerMessageObserver {
             else if (gameRepl.getGameData() != null){
                 gameRepl.loop();
             }
+
+            else{
+                // waiting for server to load, so just busy spin
+                try { Thread.sleep(20); } catch (InterruptedException ignored) {}
+            }
         }
     }
 
-
     @Override
     public void notify(ServerMessage message) {
+        boolean printLoop = gameRepl.getGameData() != null;
         if(message.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME){
             LoadGameMessage loadGame = (LoadGameMessage)message;
             gameRepl.setGameData(loadGame.getGame());
@@ -53,8 +62,9 @@ public class ChessClient implements ServerMessageObserver {
         if(message.getServerMessageType() == ServerMessage.ServerMessageType.ERROR){
             ErrorMessage error = (ErrorMessage)message;
             System.out.println("\r" + EscapeSequences.ERASE_LINE + error.getErrorMessage());
+            if(!printLoop){gameRepl.setJoinGameRequest(null);}
         }
 
-        gameRepl.printLoop();
+        if(printLoop) {gameRepl.printLoop();}
     }
 }

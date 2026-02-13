@@ -61,6 +61,7 @@ public class WebsocketCommunicator extends Endpoint {
         System.out.println("Client WS opened id=" + session.getId());
     }
 
+    // for debugging
     @Override
     public void onError(Session session, Throwable thr) {
         System.out.println("Client WS ERROR (session=" + (session == null ? "null" : session.getId()) + ")");

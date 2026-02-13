@@ -6,12 +6,13 @@ import model.GameData;
 import java.util.Scanner;
 
 public class PostRepl {
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner;
     private final ServerFacade facade;
     private LoginResult loginResult;
 
-    public PostRepl(ServerFacade facade){
+    public PostRepl(ServerFacade facade, Scanner scanner){
         this.facade = facade;
+        this.scanner = scanner;
     }
 
     public LoginResult getLoginResult() {
@@ -23,7 +24,7 @@ public class PostRepl {
     }
 
     public void printLoop(){
-        System.out.print("[" + loginResult.username() + "] >>> ");
+        System.out.print("\n[" + loginResult.username() + "] >>> ");
     }
 
     public JoinGameRequest loop(){
@@ -100,8 +101,8 @@ public class PostRepl {
                     joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, Integer.parseInt(id), true);
                     facade.connect(getLoginResult().authToken(), joinGameRequest.gameID());
                 }
-                catch(RuntimeException e){
-                    System.out.println("Internal server error");
+                catch(Exception e){
+                    System.out.println("Internal server error! Game might not exist.");
                     joinGameRequest = null;
                 }
                 break;

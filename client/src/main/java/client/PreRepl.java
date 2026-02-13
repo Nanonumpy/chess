@@ -5,15 +5,16 @@ import model.UserData;
 import java.util.Scanner;
 
 public class PreRepl {
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner;
     private final ServerFacade facade;
 
-    public PreRepl(ServerFacade facade){
+    public PreRepl(ServerFacade facade, Scanner scanner){
         this.facade = facade;
+        this.scanner = scanner;
     }
 
     public void printLoop(){
-        System.out.print("[LOGGED OUT] >>> ");
+        System.out.print("\n[LOGGED OUT] >>> ");
     }
 
     public LoginResult loop() {
