@@ -75,7 +75,7 @@ public class WebsocketRequestHandler implements WsConnectHandler, WsMessageHandl
         String username = getUsername(command.getAuthToken());
 
         // Send LOAD_GAME to root
-        root.session.getRemote().sendString(gson.toJson(new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,
+        root.send(gson.toJson(new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,
                 gameData)));
 
         // Send Notification to all other clients saying someone joined as a player (with color) or observer

@@ -31,24 +31,25 @@ public class WebsocketCommunicator extends Endpoint {
             this.session = container.connectToServer(this, socketURI);
 
             //set message handler
-            this.session.addMessageHandler((MessageHandler.Whole<String>) message -> {
-                JsonObject obj = JsonParser.parseString(message).getAsJsonObject();
-                String type = obj.get("serverMessageType").getAsString();
+            MessageHandler.Whole<String> textHandler = new MessageHandler.Whole<>() {
+                @Override
+                public void onMessage(String message) {
+                    JsonObject obj = JsonParser.parseString(message).getAsJsonObject();
+                    String type = obj.get("serverMessageType").getAsString();
 
-                ServerMessage notification;
+                    ServerMessage notification;
+                    switch (type) {
+                        case "LOAD_GAME" -> notification = gson.fromJson(message, LoadGameMessage.class);
+                        case "NOTIFICATION" -> notification = gson.fromJson(message, NotificationMessage.class);
+                        case "ERROR" -> notification = gson.fromJson(message, ErrorMessage.class);
+                        default -> throw new IllegalStateException("Unknown message type: " + type);
+                    }
 
-                switch (type) {
-                    case "LOAD_GAME" ->
-                            notification = gson.fromJson(message, LoadGameMessage.class);
-                    case "NOTIFICATION" ->
-                            notification = gson.fromJson(message, NotificationMessage.class);
-                    case "ERROR" ->
-                            notification = gson.fromJson(message, ErrorMessage.class);
-                    default ->
-                            throw new IllegalStateException("Unknown message type");
+                    notificationHandler.notify(notification);
                 }
-                notificationHandler.notify(notification);
-            });
+            };
+            this.session.addMessageHandler(textHandler);
+
         } catch (DeploymentException | IOException | URISyntaxException ex) {
             throw new RuntimeException(ex.getMessage());
         }
@@ -57,6 +58,13 @@ public class WebsocketCommunicator extends Endpoint {
     //Endpoint requires this method, but you don't have to do anything
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
+        System.out.println("Client WS opened id=" + session.getId());
+    }
+
+    @Override
+    public void onError(Session session, Throwable thr) {
+        System.out.println("Client WS ERROR (session=" + (session == null ? "null" : session.getId()) + ")");
+        thr.printStackTrace();
     }
 
     public void connect(String authToken, int gameID){
