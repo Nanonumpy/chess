@@ -48,11 +48,11 @@ public class ChessClient implements ServerMessageObserver {
         }
         if(message.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION){
             NotificationMessage notification = (NotificationMessage)message;
-            System.out.println("\n"+notification.getMessage());
+            System.out.println("\r" + EscapeSequences.ERASE_LINE + notification.getMessage());
         }
         if(message.getServerMessageType() == ServerMessage.ServerMessageType.ERROR){
             ErrorMessage error = (ErrorMessage)message;
-            System.out.println("\n"+error.getErrorMessage());
+            System.out.println("\r" + EscapeSequences.ERASE_LINE + error.getErrorMessage());
         }
 
         gameRepl.printLoop();

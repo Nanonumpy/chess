@@ -191,7 +191,7 @@ public class GameRepl {
         }
 
         StringBuilder out = new StringBuilder();
-        out.append("\n");
+        out.append("\r" + EscapeSequences.ERASE_LINE);
         StringBuilder letters;
         int startR;
         int endR;
@@ -248,27 +248,25 @@ public class GameRepl {
                 }
                 else{
                     background = ((r+c)%2==1)
-                            ? EscapeSequences.SET_BG_COLOR_LIGHT_GREY : EscapeSequences.SET_BG_COLOR_BLACK;
+                            ? EscapeSequences.SET_BG_COLOR_LIGHT_BROWN : EscapeSequences.SET_BG_COLOR_DARK_BROWN;
                 }
 
                 if(piece == null){
                     out.append(background).append(EscapeSequences.EMPTY);
                 }
                 else{
-                    String chr = background + switch (piece.getPieceType()) {
-                        case ChessPiece.PieceType.BISHOP -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                ? EscapeSequences.WHITE_BISHOP : EscapeSequences.BLACK_BISHOP;
-                        case ChessPiece.PieceType.KING -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                ? EscapeSequences.WHITE_KING : EscapeSequences.BLACK_KING;
-                        case ChessPiece.PieceType.KNIGHT -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                ? EscapeSequences.WHITE_KNIGHT : EscapeSequences.BLACK_KNIGHT;
-                        case ChessPiece.PieceType.PAWN -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                ? EscapeSequences.WHITE_PAWN : EscapeSequences.BLACK_PAWN;
-                        case ChessPiece.PieceType.QUEEN -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                ? EscapeSequences.WHITE_QUEEN : EscapeSequences.BLACK_QUEEN;
-                        case ChessPiece.PieceType.ROOK -> (piece.getTeamColor() == ChessGame.TeamColor.WHITE)
-                                ? EscapeSequences.WHITE_ROOK : EscapeSequences.BLACK_ROOK;
-                    };
+                    String chr = background +
+                            ((piece.getTeamColor() == ChessGame.TeamColor.WHITE)
+                            ? EscapeSequences.SET_TEXT_COLOR_WHITE
+                            : EscapeSequences.SET_TEXT_COLOR_BLACK)
+                            + switch (piece.getPieceType()) {
+                        case ChessPiece.PieceType.BISHOP -> EscapeSequences.BLACK_BISHOP;
+                        case ChessPiece.PieceType.KING -> EscapeSequences.BLACK_KING;
+                        case ChessPiece.PieceType.KNIGHT -> EscapeSequences.BLACK_KNIGHT;
+                        case ChessPiece.PieceType.PAWN -> EscapeSequences.BLACK_PAWN;
+                        case ChessPiece.PieceType.QUEEN -> EscapeSequences.BLACK_QUEEN;
+                        case ChessPiece.PieceType.ROOK -> EscapeSequences.BLACK_ROOK;
+                    } + EscapeSequences.RESET_TEXT_COLOR;
 
                     out.append(chr);
                 }
