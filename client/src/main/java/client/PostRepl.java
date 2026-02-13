@@ -47,7 +47,7 @@ public class PostRepl {
                     setLoginResult(null);
                 }
                 catch(RuntimeException e){
-                    System.out.print("Internal server error");
+                    System.out.println("Internal server error");
                 }
                 break;
 
@@ -60,7 +60,7 @@ public class PostRepl {
                     System.out.println("Your game ID is " + tempGameID);
                 }
                 catch(RuntimeException e){
-                    System.out.print("Internal server error");
+                    System.out.println("Internal server error");
                 }
                 break;
 
@@ -72,7 +72,7 @@ public class PostRepl {
                     }
                 }
                 catch(RuntimeException e){
-                    System.out.print("Internal server error");
+                    System.out.println("Internal server error");
                 }
                 break;
 
@@ -88,7 +88,7 @@ public class PostRepl {
                     facade.connect(getLoginResult().authToken(), joinGameRequest.gameID());
                 }
                 catch(RuntimeException e){
-                    System.out.print("Bad input or Internal server error");
+                    System.out.println("Bad input or Internal server error");
                     joinGameRequest = null;
                 }
                 break;
@@ -101,7 +101,7 @@ public class PostRepl {
                     facade.connect(getLoginResult().authToken(), joinGameRequest.gameID());
                 }
                 catch(RuntimeException e){
-                    System.out.print("Internal server error");
+                    System.out.println("Internal server error");
                     joinGameRequest = null;
                 }
                 break;

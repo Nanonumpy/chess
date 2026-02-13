@@ -62,7 +62,7 @@ public class PreRepl {
             return facade.login(new LoginRequest(username, password));
         }
         catch(RuntimeException e){
-            System.out.print("Internal server error or invalid credentials");
+            System.out.println("Internal server error or invalid credentials");
         }
 
         return null;
@@ -79,7 +79,7 @@ public class PreRepl {
         try {
             return facade.register(new UserData(username, password, email));
         } catch (RuntimeException e) {
-            System.out.print("Internal server error or username taken");
+            System.out.println("Internal server error or username taken");
         }
 
         return null;
